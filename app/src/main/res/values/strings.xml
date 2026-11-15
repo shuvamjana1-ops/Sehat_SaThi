@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">SehatSaathi</string>
+    <string name="safety_footer_disclaimer">SehatSaathi is a support tool, not a doctor. In an emergency call 112.</string>
+    <string name="demo_mode_badge">Demo mode</string>
+    <string name="sample_data_banner">Sample data for demonstration only. Verify with an official source before real use.</string>
+    <string name="cta_get_started">Get started</string>
+    <string name="cta_try_demo">Try demo</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_medicines">Medicines</string>
+    <string name="nav_log_reading">Log reading</string>
+    <string name="nav_trends">Trends</string>
+    <string name="nav_family">Family</string>
+    <string name="nav_scan">Scan Rx</string>
+    <string name="nav_account">Account</string>
+</resources>

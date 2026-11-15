@@ -1,0 +1,6 @@
+{
+  "name": "SehatSaathi",
+  "description": "Prescription reader and health safety companion for diabetes, blood pressure, and family alerts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
