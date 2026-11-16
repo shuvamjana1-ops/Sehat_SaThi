@@ -506,9 +506,78 @@
       line-height: 1.4;
       color: var(--ink-secondary);
     }
+
+    /* Judge Warning Popup Modal & Banner */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(11, 37, 50, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-box {
+      max-width: 580px;
+      width: 100%;
+      background: var(--white);
+      color: var(--ink);
+      border: 2px solid var(--clinical-blue);
+      border-radius: 24px;
+      padding: 28px 24px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.38);
+      animation: modalPop 0.2s ease-out;
+    }
+
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.95) translateY(8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .judge-warning-banner {
+      background: var(--caution-bg);
+      color: var(--caution-fg);
+      border: 1.5px solid var(--caution-fg);
+      border-radius: 18px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
   </style>
 </head>
 <body>
+  <!-- Judge Warning Popup Modal (Shown Automatically on Page Load) -->
+  <div class="modal-backdrop" id="judgeWarningModal" role="dialog" aria-modal="true" aria-labelledby="judgeModalTitle">
+    <div class="modal-box">
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px;">
+        <span class="status-chip status-caution">⚠ Important Notice for Judges</span>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="closeJudgeModal()" style="min-height:40px; padding:6px 12px;">✕ Close</button>
+      </div>
+      <h2 id="judgeModalTitle" style="margin-bottom:10px;">You Must Download the APK for the Actual App</h2>
+      <p style="font-size:17px; margin-bottom:12px;">
+        <strong>This web page is only a browser interface preview</strong> created so you can quickly inspect the project layout via a web link.
+      </p>
+      <p style="font-size:16px; color:var(--ink-secondary); margin-bottom:18px;">
+        To test and evaluate the <strong>actual native SehatSaathi Android application</strong> (full Jetpack Compose UI, 100-medicine Indian dataset, Gemini AI prescription OCR &amp; vitals scanner, voice reminders, and editable Care Card), please download and install the signed Android APK below.
+      </p>
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-primary" type="button" onclick="downloadApkFromModal(event)" style="flex:1;">
+          ⬇ Download Actual Android APK (.apk)
+        </button>
+        <button class="btn btn-secondary" type="button" onclick="closeJudgeModal()">
+          Continue to Web Interface
+        </button>
+      </div>
+    </div>
+  </div>
+
   <header>
     <div class="nav-inner">
       <a href="./" class="brand">
@@ -516,6 +585,9 @@
         <span>SehatSaathi</span>
       </a>
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" type="button" onclick="openJudgeModal()">
+          ⚠ Judge Notice
+        </button>
         <button class="btn btn-secondary btn-sm" type="button" onclick="toggleSimpleMode()" id="simpleModeBtn">
           Simple Mode: OFF
         </button>
@@ -530,6 +602,21 @@
   </header>
 
   <main>
+    <!-- Persistent Top Warning Banner for Judges -->
+    <div class="judge-warning-banner" role="alert">
+      <div style="flex:1; min-width:260px; font-size:16px; font-weight:700;">
+        ⚠ <strong>Notice for Judges:</strong> This web deployment is only an interface preview. You must <strong>download the Android APK (.apk)</strong> to experience the actual native Android application.
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary btn-sm" type="button" onclick="downloadApk(event)">
+          ⬇ Download Actual APK
+        </button>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="openJudgeModal()">
+          Read Details
+        </button>
+      </div>
+    </div>
+
     <!-- Hero Banner -->
     <section class="glass-card">
       <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
@@ -539,14 +626,14 @@
       </div>
       <h1>Calm, clear daily support for blood sugar, blood pressure, and medicines.</h1>
       <p>
-        Try the full interactive <strong>SehatSaathi Android App</strong> directly in your browser below — no login required — or download the signed Android APK to install on any Android phone or emulator.
+        Try the interactive <strong>Web Interface Preview</strong> directly in your browser below — or <strong>download the signed Android APK</strong> to run the actual native Android app on your phone or emulator.
       </p>
       <div class="btn-row">
-        <button class="btn btn-primary" type="button" onclick="focusSimulator()">
-          ▶ Launch Interactive App Preview
+        <button class="btn btn-primary" type="button" onclick="downloadApk(event)">
+          ⬇ Download Actual Android APK (.apk)
         </button>
-        <button class="btn btn-secondary" type="button" onclick="downloadApk(event)">
-          ⬇ Download Android APK (.apk)
+        <button class="btn btn-secondary" type="button" onclick="focusSimulator()">
+          ▶ Try Web Interface Preview
         </button>
         <button class="btn btn-secondary" type="button" onclick="toggleExpandPreview()" id="expandPreviewBtn">
           ⤢ Expand Full-Width App View
@@ -666,6 +753,21 @@
   </footer>
 
   <script>
+    function openJudgeModal() {
+      var modal = document.getElementById('judgeWarningModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeJudgeModal() {
+      var modal = document.getElementById('judgeWarningModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function downloadApkFromModal(event) {
+      closeJudgeModal();
+      downloadApk(event);
+    }
+
     // Smart APK Resolver: checks local static APK, then GitHub Release APK, avoiding browser 404 "Download failed"
     function downloadApk(event) {
       if (event) event.preventDefault();
