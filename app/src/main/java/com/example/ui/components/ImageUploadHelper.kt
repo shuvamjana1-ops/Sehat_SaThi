@@ -195,3 +195,27 @@ fun launchSafeEmail(
     onError?.invoke("No email app is configured on this device.")
   }
 }
+
+fun launchGoogleMapsSearch(
+  context: Context,
+  query: String = "hospital emergency near me",
+  onError: ((String) -> Unit)? = null,
+) {
+  val encoded = Uri.encode(query.ifBlank { "hospital emergency near me" })
+  val gmmIntentUri = Uri.parse("geo:0,0?q=$encoded")
+  val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri).apply {
+    setPackage("com.google.android.apps.maps")
+    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+  }
+  val resolvedIntent = if (mapIntent.resolveActivity(context.packageManager) != null) {
+    mapIntent
+  } else {
+    Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=$encoded")).apply {
+      addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+  }
+  runCatching { context.startActivity(resolvedIntent) }.onFailure {
+    onError?.invoke("Could not open Google Maps.")
+  }
+}
+

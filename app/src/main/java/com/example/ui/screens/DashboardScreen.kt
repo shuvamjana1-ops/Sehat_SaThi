@@ -719,9 +719,17 @@ private fun VitalsTile(
           Text("Blood sugar", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
           Row(verticalAlignment = Alignment.Bottom) {
             Text(
-              text = "${latestReading.glucoseMgDl}\u00A0mg/dL",
+              text = "${latestReading.glucoseMgDl}",
               style = MaterialTheme.typography.headlineLarge.tabular(),
               color = c.deepOcean,
+              softWrap = false,
+              modifier = Modifier.alignByBaseline(),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+              text = "mg/dL",
+              style = MaterialTheme.typography.labelLarge,
+              color = c.inkSecondary,
               softWrap = false,
               modifier = Modifier.alignByBaseline(),
             )
@@ -747,7 +755,7 @@ private fun VitalsTile(
               modifier = Modifier.alignByBaseline(),
             )
           }
-          Text("mmHg · Latest", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
+          Text("Latest reading", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
         }
       }
     }

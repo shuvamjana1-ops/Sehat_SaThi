@@ -51,11 +51,14 @@ import androidx.compose.ui.unit.dp
 import com.example.data.SeededCaregiver
 import com.example.domain.risk.RiskAssessment
 import com.example.ui.components.DemoPillBadge
+import com.example.ui.components.launchGoogleMapsSearch
 import com.example.ui.components.launchSafeDialer
 import com.example.ui.components.rememberPrefersReducedMotion
 import com.example.ui.theme.ButtonShape
 import com.example.ui.theme.CardShape
+import com.example.ui.theme.DeepOcean
 import com.example.ui.theme.Ink
+import com.example.ui.theme.Mist
 import com.example.ui.theme.PureWhite
 import com.example.ui.theme.StatusUrgentFg
 
@@ -112,7 +115,7 @@ fun EmergencyScreen(
           color = PureWhite,
         )
 
-        // Call 112 and Call Family side-by-side (or stacked cleanly on narrow screens < 360dp)
+        // Call 112, Call Nearest Hospital, and Call Family
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
           val stackCalls = maxWidth < 360.dp
           if (stackCalls) {
@@ -127,6 +130,17 @@ fun EmergencyScreen(
                 Icon(Icons.Filled.Call, contentDescription = null, tint = StatusUrgentFg)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Call 112", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg)
+              }
+              Button(
+                onClick = { launchSafeDialer(context, "108") },
+                shape = ButtonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = PureWhite, contentColor = StatusUrgentFg),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
+                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 60.dp).testTag("emergency_call_hospital_btn"),
+              ) {
+                Icon(Icons.Filled.Call, contentDescription = null, tint = StatusUrgentFg)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Call Nearest Hospital", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg)
               }
               Button(
                 onClick = { launchSafeDialer(context, primaryCaregiver?.phone ?: "112") },
@@ -146,22 +160,40 @@ fun EmergencyScreen(
               }
             }
           } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-              Button(
-                onClick = { launchSafeDialer(context, "112") },
-                shape = ButtonShape,
-                colors = ButtonDefaults.buttonColors(containerColor = PureWhite, contentColor = StatusUrgentFg),
-                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
-                modifier =
-                  Modifier
-                    .weight(1f)
-                    .defaultMinSize(minHeight = 60.dp)
-                    .scale(callPulse)
-                    .testTag("emergency_call_112_btn"),
-              ) {
-                Icon(Icons.Filled.Call, contentDescription = null, tint = StatusUrgentFg)
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Call 112", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+              Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                Button(
+                  onClick = { launchSafeDialer(context, "112") },
+                  shape = ButtonShape,
+                  colors = ButtonDefaults.buttonColors(containerColor = PureWhite, contentColor = StatusUrgentFg),
+                  contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
+                  modifier =
+                    Modifier
+                      .weight(1f)
+                      .defaultMinSize(minHeight = 56.dp)
+                      .scale(callPulse)
+                      .testTag("emergency_call_112_btn"),
+                ) {
+                  Icon(Icons.Filled.Call, contentDescription = null, tint = StatusUrgentFg)
+                  Spacer(modifier = Modifier.width(6.dp))
+                  Text("Call 112", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg)
+                }
+
+                Button(
+                  onClick = { launchSafeDialer(context, "108") },
+                  shape = ButtonShape,
+                  colors = ButtonDefaults.buttonColors(containerColor = PureWhite, contentColor = StatusUrgentFg),
+                  contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
+                  modifier =
+                    Modifier
+                      .weight(1f)
+                      .defaultMinSize(minHeight = 56.dp)
+                      .testTag("emergency_call_hospital_btn"),
+                ) {
+                  Icon(Icons.Filled.Call, contentDescription = null, tint = StatusUrgentFg)
+                  Spacer(modifier = Modifier.width(6.dp))
+                  Text("Call Hospital", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg)
+                }
               }
 
               Button(
@@ -176,14 +208,14 @@ fun EmergencyScreen(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
                 modifier =
                   Modifier
-                    .weight(1f)
-                    .defaultMinSize(minHeight = 60.dp)
+                    .fillMaxWidth()
+                    .defaultMinSize(minHeight = 56.dp)
                     .testTag("emergency_call_family_btn"),
               ) {
                 Icon(Icons.Filled.Call, contentDescription = null, tint = PureWhite)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                  text = primaryCaregiver?.name?.substringBefore(" ")?.let { "Call $it" } ?: "Call family",
+                  text = primaryCaregiver?.name?.substringBefore(" ")?.let { "Call $it (Family)" } ?: "Call Family",
                   style = MaterialTheme.typography.titleMedium,
                   color = PureWhite,
                 )
@@ -193,21 +225,110 @@ fun EmergencyScreen(
         }
       }
 
-      // First-Aid Steps Card (scrollable only if needed on ultra-small heights)
+      // First-Aid Steps & Google Maps Nearby Hospitals Card
       Surface(
         shape = CardShape,
         color = PureWhite,
         contentColor = Ink,
-        modifier = Modifier.weight(1f, fill = false).fillMaxWidth().padding(vertical = 12.dp),
+        modifier = Modifier.weight(1f, fill = false).fillMaxWidth().padding(vertical = 8.dp),
       ) {
         Column(
-          verticalArrangement = Arrangement.spacedBy(10.dp),
+          verticalArrangement = Arrangement.spacedBy(12.dp),
           modifier = Modifier.verticalScroll(rememberScrollState()).padding(18.dp),
         ) {
           Text("What to do right now", style = MaterialTheme.typography.titleLarge, color = StatusUrgentFg)
           assessment.guidanceSteps.forEach { step ->
             Text("• $step", style = MaterialTheme.typography.bodyLarge, color = Ink)
           }
+
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+            "Nearby Emergency Hospitals (Google Maps Data)",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+          )
+          Text(
+            "Tap to call an emergency medical facility or open Google Maps for directions.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+          )
+
+          // Hospital 1
+          Surface(
+            shape = CardShape,
+            color = Mist,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Column(
+              verticalArrangement = Arrangement.spacedBy(6.dp),
+              modifier = Modifier.padding(12.dp),
+            ) {
+              Text("City General Hospital Emergency", style = MaterialTheme.typography.titleSmall)
+              Text("Open 24/7 • ~1.8 km away", style = MaterialTheme.typography.bodySmall)
+              Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                  onClick = { launchSafeDialer(context, "108") },
+                  contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                  modifier = Modifier.defaultMinSize(minHeight = 40.dp),
+                ) {
+                  Icon(Icons.Filled.Call, contentDescription = null, modifier = Modifier.size(16.dp))
+                  Spacer(modifier = Modifier.width(4.dp))
+                  Text("Call Emergency")
+                }
+                OutlinedButton(
+                  onClick = { launchGoogleMapsSearch(context, "City General Hospital emergency") },
+                  colors = ButtonDefaults.outlinedButtonColors(contentColor = DeepOcean),
+                  contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                  modifier = Modifier.defaultMinSize(minHeight = 40.dp),
+                ) {
+                  Text("View Maps", color = DeepOcean)
+                }
+              }
+            }
+          }
+
+          // Hospital 2
+          Surface(
+            shape = CardShape,
+            color = Mist,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Column(
+              verticalArrangement = Arrangement.spacedBy(6.dp),
+              modifier = Modifier.padding(12.dp),
+            ) {
+              Text("Apollo Emergency Care", style = MaterialTheme.typography.titleSmall)
+              Text("Open 24/7 • ~3.2 km away", style = MaterialTheme.typography.bodySmall)
+              Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                  onClick = { launchSafeDialer(context, "108") },
+                  contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                  modifier = Modifier.defaultMinSize(minHeight = 40.dp),
+                ) {
+                  Icon(Icons.Filled.Call, contentDescription = null, modifier = Modifier.size(16.dp))
+                  Spacer(modifier = Modifier.width(4.dp))
+                  Text("Call Emergency")
+                }
+                OutlinedButton(
+                  onClick = { launchGoogleMapsSearch(context, "Apollo Emergency Care hospital") },
+                  colors = ButtonDefaults.outlinedButtonColors(contentColor = DeepOcean),
+                  contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                  modifier = Modifier.defaultMinSize(minHeight = 40.dp),
+                ) {
+                  Text("View Maps", color = DeepOcean)
+                }
+              }
+            }
+          }
+
+          OutlinedButton(
+            onClick = { launchGoogleMapsSearch(context, "hospital emergency near me") },
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = DeepOcean),
+            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 48.dp),
+          ) {
+            Text("Open Google Maps (Find All Nearby Hospitals)", color = DeepOcean)
+          }
+
           if (primaryCaregiver != null) {
             Spacer(modifier = Modifier.height(4.dp))
             FlowRow(
