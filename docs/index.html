@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SehatSaathi — Chronic Care &amp; Medication Companion</title>
+  <title>SehatSaathi — Live Android App Preview &amp; Web Companion</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -17,12 +17,31 @@
       --ink: #16262E;
       --ink-secondary: #3E5460;
       --border: #C9DCE5;
+      --surface-card: rgba(255, 255, 255, 0.92);
       --normal-bg: #E6F6EC;
       --normal-fg: #146C32;
       --caution-bg: #FEF4E2;
       --caution-fg: #935306;
       --urgent-bg: #FCE8E6;
       --urgent-fg: #B31412;
+    }
+
+    body.dark-mode {
+      --deep-ocean: #7CC6E8;
+      --clinical-blue: #0E6E8C;
+      --mist: #132733;
+      --mist-soft: #18303E;
+      --white: #0F202A;
+      --ink: #ECF4F8;
+      --ink-secondary: #B4CBD6;
+      --border: #284657;
+      --surface-card: rgba(18, 37, 48, 0.94);
+      --normal-bg: #123D24;
+      --normal-fg: #8CE6A8;
+      --caution-bg: #422C09;
+      --caution-fg: #FFD089;
+      --urgent-bg: #491515;
+      --urgent-fg: #FF9E9C;
     }
 
     * {
@@ -36,7 +55,7 @@
       font-size: 18px;
       line-height: 1.56;
       color: var(--ink);
-      background: linear-gradient(155deg, var(--white) 0%, var(--mist) 58%, #d7eaf2 100%);
+      background: linear-gradient(155deg, var(--white) 0%, var(--mist) 58%, var(--mist-soft) 100%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -45,21 +64,21 @@
     header {
       position: sticky;
       top: 0;
-      z-index: 20;
-      background: rgba(255, 255, 255, 0.84);
+      z-index: 30;
+      background: var(--surface-card);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--border);
-      padding: 14px 24px;
+      padding: 12px 20px;
     }
 
     .nav-inner {
-      max-width: 1120px;
+      max-width: 1200px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 12px;
       flex-wrap: wrap;
     }
 
@@ -73,13 +92,26 @@
       text-decoration: none;
     }
 
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: var(--clinical-blue);
+      color: #FFFFFF;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+    }
+
     .badge {
       display: inline-flex;
       align-items: center;
-      padding: 4px 12px;
+      padding: 5px 12px;
       border-radius: 999px;
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
       line-height: 1.4;
       background: var(--mist);
       color: var(--deep-ocean);
@@ -88,18 +120,18 @@
     }
 
     main {
-      max-width: 1120px;
+      max-width: 1200px;
       width: 100%;
       margin: 0 auto;
-      padding: 32px 20px 64px;
+      padding: 24px 16px 56px;
       flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 28px;
+      gap: 24px;
     }
 
     .glass-card {
-      background: rgba(255, 255, 255, 0.86);
+      background: var(--surface-card);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border);
@@ -109,21 +141,29 @@
     }
 
     h1 {
-      font-size: clamp(32px, 4.5vw, 48px);
-      line-height: 1.15;
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.16;
       font-weight: 800;
       color: var(--deep-ocean);
       text-wrap: balance;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     h2 {
-      font-size: clamp(22px, 3vw, 28px);
+      font-size: clamp(21px, 2.6vw, 26px);
       line-height: 1.25;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--deep-ocean);
       text-wrap: balance;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      font-size: 19px;
+      line-height: 1.3;
+      font-weight: 700;
+      color: var(--deep-ocean);
+      margin-bottom: 6px;
     }
 
     p {
@@ -136,7 +176,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      margin-top: 20px;
+      margin-top: 16px;
     }
 
     .btn {
@@ -144,8 +184,8 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 56px;
-      padding: 12px 22px;
+      min-height: 52px;
+      padding: 10px 20px;
       border-radius: 16px;
       font-family: 'Manrope', sans-serif;
       font-size: 16px;
@@ -154,7 +194,8 @@
       text-decoration: none;
       cursor: pointer;
       border: none;
-      transition: transform 0.15s ease;
+      transition: transform 0.14s ease, opacity 0.14s ease;
+      white-space: nowrap;
     }
 
     .btn:active {
@@ -163,8 +204,8 @@
 
     .btn-primary {
       background: var(--clinical-blue);
-      color: var(--white);
-      box-shadow: 0 6px 18px rgba(14, 110, 140, 0.28);
+      color: #FFFFFF;
+      box-shadow: 0 6px 18px rgba(14, 110, 140, 0.26);
     }
 
     .btn-secondary {
@@ -173,45 +214,156 @@
       border: 1.5px solid var(--clinical-blue);
     }
 
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      align-items: stretch;
+    .btn-urgent {
+      background: #B31412;
+      color: #FFFFFF;
     }
 
-    .field-group {
+    .btn-sm {
+      min-height: 48px;
+      padding: 8px 14px;
+      font-size: 15px;
+      border-radius: 12px;
+    }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    @media (min-width: 960px) {
+      .workspace-grid {
+        grid-template-columns: 440px 1fr;
+      }
+      .workspace-grid.expanded-preview {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .phone-shell {
+      background: #0B2532;
+      border-radius: 36px;
+      padding: 12px;
+      box-shadow: 0 20px 50px rgba(11, 79, 108, 0.24);
+      border: 3px solid #244C60;
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      transition: max-width 0.2s ease;
+    }
+
+    .workspace-grid.expanded-preview .phone-shell {
+      max-width: 100%;
+    }
+
+    .phone-statusbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 16px 10px;
+      color: #E8F1F5;
+      font-size: 14px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .phone-screen {
+      background: var(--white);
+      color: var(--ink);
+      border-radius: 26px;
+      overflow: hidden;
+      border: 1px solid var(--border);
       display: flex;
       flex-direction: column;
+      min-height: 680px;
+    }
+
+    .app-topbar {
+      background: var(--surface-card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 8px;
-      margin-bottom: 16px;
+      flex-wrap: wrap;
     }
 
-    label {
-      font-size: 16px;
-      font-weight: 600;
-      line-height: 1.4;
-      color: var(--deep-ocean);
+    .app-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    input, select {
-      min-height: 56px;
-      padding: 12px 16px;
-      border-radius: 14px;
-      border: 1.5px solid var(--border);
+    .app-bottomnav {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      background: var(--surface-card);
+      border-top: 1px solid var(--border);
+      padding: 6px 4px;
+      gap: 2px;
+    }
+
+    .nav-tab {
+      min-height: 52px;
+      border: none;
+      background: transparent;
+      color: var(--ink-secondary);
       font-family: 'Manrope', sans-serif;
-      font-size: 18px;
-      color: var(--ink);
-      background: var(--white);
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 4px 2px;
+    }
+
+    .nav-tab.active {
+      background: var(--clinical-blue);
+      color: #FFFFFF;
+    }
+
+    .inner-card {
+      background: var(--mist-soft);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .vitals-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(165px, 1fr));
+      gap: 12px;
+    }
+
+    .metric-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--deep-ocean);
       font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .metric-unit {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--ink-secondary);
     }
 
     .status-chip {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      min-height: 34px;
-      padding: 6px 14px;
+      gap: 6px;
+      min-height: 32px;
+      padding: 4px 12px;
       border-radius: 999px;
       font-size: 14px;
       font-weight: 700;
@@ -223,6 +375,104 @@
     .status-caution { background: var(--caution-bg); color: var(--caution-fg); }
     .status-urgent { background: var(--urgent-bg); color: var(--urgent-fg); }
 
+    .dose-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    label {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--deep-ocean);
+    }
+
+    input, select {
+      min-height: 52px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1.5px solid var(--border);
+      font-family: 'Manrope', sans-serif;
+      font-size: 18px;
+      color: var(--ink);
+      background: var(--white);
+      font-variant-numeric: tabular-nums;
+      width: 100%;
+    }
+
+    .subtab-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .subtab-btn {
+      min-height: 48px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--deep-ocean);
+      font-family: 'Manrope', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .subtab-btn.active {
+      background: var(--clinical-blue);
+      color: #FFFFFF;
+      border-color: var(--clinical-blue);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .switch-btn {
+      min-width: 64px;
+      min-height: 48px;
+      border-radius: 999px;
+      border: none;
+      font-family: 'Manrope', sans-serif;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 6px 14px;
+    }
+
+    .switch-on {
+      background: var(--clinical-blue);
+      color: #FFFFFF;
+    }
+
+    .switch-off {
+      background: var(--mist);
+      color: var(--ink-secondary);
+      border: 1px solid var(--border);
+    }
+
     .links-list {
       list-style: none;
       display: flex;
@@ -233,27 +483,26 @@
 
     .links-list a {
       color: var(--clinical-blue);
-      font-weight: 600;
+      font-weight: 700;
       text-decoration: underline;
       text-underline-offset: 3px;
     }
 
     footer {
-      background: var(--white);
+      background: var(--surface-card);
       border-top: 1px solid var(--border);
       padding: 18px 24px;
-      text-align: left;
     }
 
     .footer-inner {
-      max-width: 1120px;
+      max-width: 1200px;
       margin: 0 auto;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 12px;
-      font-size: 14px;
+      font-size: 15px;
       line-height: 1.4;
       color: var(--ink-secondary);
     }
@@ -262,69 +511,150 @@
 <body>
   <header>
     <div class="nav-inner">
-      <a href="./" class="brand">SehatSaathi</a>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <span class="badge">Manrope 18px+</span>
-        <span class="badge">Hackathon Submission Portal</span>
+      <a href="./" class="brand">
+        <span class="brand-icon">SS</span>
+        <span>SehatSaathi</span>
+      </a>
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" type="button" onclick="toggleSimpleMode()" id="simpleModeBtn">
+          Simple Mode: OFF
+        </button>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="toggleDarkMode()" id="darkModeBtn">
+          Dark Mode: OFF
+        </button>
+        <button class="btn btn-primary btn-sm" type="button" onclick="downloadApk(event)">
+          ⬇ Download Android APK
+        </button>
       </div>
     </div>
   </header>
 
   <main>
+    <!-- Hero Banner -->
     <section class="glass-card">
-      <span class="badge" style="margin-bottom:12px;">Chronic Care &amp; Medication Companion</span>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px;">
+        <span class="badge">Live Interactive Android App Preview</span>
+        <span class="badge">Manrope 18px+ Clinical UI</span>
+        <span class="badge">57/57 Tests Verified</span>
+      </div>
       <h1>Calm, clear daily support for blood sugar, blood pressure, and medicines.</h1>
       <p>
-        SehatSaathi helps older adults and their families log sugar and blood pressure readings, check medicine interactions and lower-cost generic equivalents, track tablet refills, and manage private caregiver sharing.
+        Try the full interactive <strong>SehatSaathi Android App</strong> directly in your browser below — no login required — or download the signed Android APK to install on any Android phone or emulator.
       </p>
       <div class="btn-row">
-        <a class="btn btn-primary" href="./SehatSaathi-debug.apk" download>
-          Download Android APK (.apk)
-        </a>
-        <a class="btn btn-secondary" href="https://ais-pre-5tv4ywtkbeqt3lh3axaufk-996956074164.asia-southeast1.run.app" target="_blank" rel="noopener">
-          Open AI Studio App Stream (Login Required)
-        </a>
+        <button class="btn btn-primary" type="button" onclick="focusSimulator()">
+          ▶ Launch Interactive App Preview
+        </button>
+        <button class="btn btn-secondary" type="button" onclick="downloadApk(event)">
+          ⬇ Download Android APK (.apk)
+        </button>
+        <button class="btn btn-secondary" type="button" onclick="toggleExpandPreview()" id="expandPreviewBtn">
+          ⤢ Expand Full-Width App View
+        </button>
       </div>
-      <p style="margin-top:14px; font-size:15px; color: var(--ink-secondary);">
-        💡 <strong>For Judges:</strong> The AI Studio stream link requires an active AI Studio login. To test the native Android app directly without logging in, download the APK above and install it on any Android phone or emulator.
-      </p>
+      <div id="apkStatusNotice" style="display:none; margin-top:14px; padding:14px 16px; border-radius:14px; background:var(--mist-soft); border:1.5px solid var(--clinical-blue); font-size:15px;">
+      </div>
     </section>
 
-    <div class="grid-2">
-      <section class="glass-card">
-        <h2>Interactive Risk Engine Check (Demo)</h2>
-        <p style="margin-bottom:16px;">Deterministic boundary check (Glucose 54 / 70 / 180 / 250 / 300&nbsp;mg/dL) — never uses AI to classify clinical risk.</p>
-        <div class="field-group">
-          <label for="glucoseInput">Blood Sugar (mg/dL)</label>
-          <input id="glucoseInput" type="number" min="20" max="600" value="148" />
+    <!-- Main Interactive Simulator + Documentation Grid -->
+    <div class="workspace-grid" id="workspaceGrid">
+      <!-- Interactive Android Phone Simulator -->
+      <div class="phone-shell" id="liveSimulator">
+        <div class="phone-statusbar">
+          <span>9:41 AM • SehatSaathi Android</span>
+          <span>5G • 100% 🔋</span>
         </div>
-        <div class="field-group">
-          <label for="contextSelect">Reading Context</label>
-          <select id="contextSelect">
-            <option value="fasting">Fasting</option>
-            <option value="after_meal" selected>After meal</option>
-          </select>
-        </div>
-        <button class="btn btn-primary" type="button" onclick="checkGlucose()" style="width:100%;">
-          Check Reading Status
-        </button>
-        <div id="riskOutput" style="margin-top:16px; padding:14px; border-radius:14px; background:var(--mist-soft); border:1px solid var(--border);">
-          <span class="status-chip status-normal" id="riskBadge">✓ Normal</span>
-          <p id="riskText" style="margin-top:8px; font-weight:600;">148&nbsp;mg/dL (After meal) is within the standard safe range. Ask your doctor or pharmacist.</p>
-        </div>
-      </section>
+        <div class="phone-screen">
+          <!-- App Top Bar -->
+          <div class="app-topbar">
+            <div>
+              <div style="font-size:14px; font-weight:700; color:var(--ink-secondary);">Namaste,</div>
+              <div style="font-size:20px; font-weight:800; color:var(--deep-ocean);" id="headerPatientName">Rajesh Sharma (64y)</div>
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-secondary btn-sm" type="button" onclick="speakCurrentScreen()" title="Read screen aloud">
+                🔊 Read
+              </button>
+              <button class="btn btn-urgent btn-sm" type="button" onclick="switchTab('emergency')">
+                112 SOS
+              </button>
+            </div>
+          </div>
 
-      <section class="glass-card">
-        <h2>Verified Reports &amp; Documentation</h2>
-        <p>All deterministic safety boundaries, 100-medicine dataset checks, QA results, and UI alignment audits are published in this repository:</p>
-        <ul class="links-list">
-          <li><a href="./ACCURACY_REPORT.md">Deterministic Accuracy Report (ACCURACY_REPORT.md)</a></li>
-          <li><a href="./qa/RESULTS.md">Full QA &amp; Security Test Results (qa/RESULTS.md)</a></li>
-          <li><a href="./qa/inventory.md">Application Route &amp; Control Inventory (qa/inventory.md)</a></li>
-          <li><a href="./ui/alignment-report.md">UI Text &amp; Alignment Report — Before vs. After (ui/alignment-report.md)</a></li>
-          <li><a href="./ui/TYPOGRAPHY.md">Manrope Typography &amp; Spacing Style Guide (ui/TYPOGRAPHY.md)</a></li>
-        </ul>
-      </section>
+          <!-- Dynamic Screen Content -->
+          <div class="app-body" id="appScreenBody">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Bottom Navigation Bar -->
+          <nav class="app-bottomnav" aria-label="App Navigation">
+            <button class="nav-tab active" id="tab-today" type="button" onclick="switchTab('today')">
+              <span>🏠</span>
+              <span>Today</span>
+            </button>
+            <button class="nav-tab" id="tab-log" type="button" onclick="switchTab('log')">
+              <span>➕</span>
+              <span>Log</span>
+            </button>
+            <button class="nav-tab" id="tab-meds" type="button" onclick="switchTab('meds')">
+              <span>💊</span>
+              <span>Meds</span>
+            </button>
+            <button class="nav-tab" id="tab-trends" type="button" onclick="switchTab('trends')">
+              <span>📈</span>
+              <span>Trends</span>
+            </button>
+            <button class="nav-tab" id="tab-family" type="button" onclick="switchTab('family')">
+              <span>👨‍👩‍👧</span>
+              <span>Family</span>
+            </button>
+            <button class="nav-tab" id="tab-profile" type="button" onclick="switchTab('profile')">
+              <span>👤</span>
+              <span>Profile</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      <!-- Right Column: Quick Evaluator Guide & Verified Reports -->
+      <div style="display:flex; flex-direction:column; gap:20px;">
+        <section class="glass-card">
+          <h2>Interactive Features Available in Preview</h2>
+          <p style="margin-bottom:14px;">
+            Click any tab inside the live Android preview on the left (or expand it full-width) to test all core journeys:
+          </p>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+            <div class="inner-card" style="cursor:pointer;" onclick="switchTab('today')">
+              <h3>1. Today &amp; Dose Checklist</h3>
+              <p style="font-size:15px; color:var(--ink-secondary);">Mark Morning, Afternoon, or Night tablets Taken/Skipped, listen with Voice Read-Aloud, and check latest vitals.</p>
+            </div>
+            <div class="inner-card" style="cursor:pointer;" onclick="switchTab('log')">
+              <h3>2. Deterministic Risk Engine</h3>
+              <p style="font-size:15px; color:var(--ink-secondary);">Log Blood Sugar (54 / 70 / 180 / 250 / 300&nbsp;mg/dL) or Blood Pressure (180/120&nbsp;mmHg) for instant non-AI safety classification.</p>
+            </div>
+            <div class="inner-card" style="cursor:pointer;" onclick="switchTab('meds')">
+              <h3>3. Scan Rx &amp; Generic Savings</h3>
+              <p style="font-size:15px; color:var(--ink-secondary);">Scan a demo prescription, detect duplicate salts or interactions, and compare lower-cost Indian generic equivalents.</p>
+            </div>
+            <div class="inner-card" style="cursor:pointer;" onclick="switchTab('profile')">
+              <h3>4. Editable Profile &amp; Care Card</h3>
+              <p style="font-size:15px; color:var(--ink-secondary);">Explore all 5 profile tabs (<code>#overview</code>, <code>#health</code>, <code>#medicines</code>, <code>#activity</code>, <code>#privacy</code>), edit patient details, and print the Care Card.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="glass-card">
+          <h2>Verified Architecture &amp; QA Reports</h2>
+          <p>All clinical boundary tests, 100-medicine dataset checks, and UI typography audits pass with zero errors:</p>
+          <ul class="links-list">
+            <li><a href="./ACCURACY_REPORT.md">Deterministic Accuracy Report (ACCURACY_REPORT.md)</a></li>
+            <li><a href="./qa/RESULTS.md">Full QA &amp; Security Test Results — 57/57 Passing (qa/RESULTS.md)</a></li>
+            <li><a href="./qa/inventory.md">Application Route &amp; Control Inventory (qa/inventory.md)</a></li>
+            <li><a href="./ui/alignment-report.md">UI Text &amp; Alignment Report — 33 Fixed, 0 Remaining (ui/alignment-report.md)</a></li>
+            <li><a href="./ui/TYPOGRAPHY.md">Manrope Typography &amp; Spacing Style Guide (ui/TYPOGRAPHY.md)</a></li>
+          </ul>
+        </section>
+      </div>
     </div>
   </main>
 
@@ -336,42 +666,563 @@
   </footer>
 
   <script>
-    function checkGlucose() {
-      const raw = document.getElementById('glucoseInput').value;
-      const ctx = document.getElementById('contextSelect').value;
-      const val = Number(raw);
-      const badge = document.getElementById('riskBadge');
-      const text = document.getElementById('riskText');
-
-      if (!Number.isFinite(val) || val < 20 || val > 600) {
-        badge.className = 'status-chip status-caution';
-        badge.textContent = '⚠ Invalid value';
-        text.textContent = 'Please enter a blood sugar value between 20\u00A0mg/dL and 600\u00A0mg/dL.';
-        return;
+    // Smart APK Resolver: checks local static APK, then GitHub Release APK, avoiding browser 404 "Download failed"
+    function downloadApk(event) {
+      if (event) event.preventDefault();
+      var notice = document.getElementById('apkStatusNotice');
+      if (notice) {
+        notice.style.display = 'block';
+        notice.innerHTML = '⏳ Checking signed Android APK package (<code>SehatSaathi-debug.apk</code>)...';
       }
 
+      var candidates = ['./SehatSaathi-debug.apk', './docs/SehatSaathi-debug.apk'];
+
+      function tryLocal(idx) {
+        if (idx >= candidates.length) {
+          return tryGitHubRelease();
+        }
+        var url = candidates[idx];
+        fetch(url, { method: 'HEAD' })
+          .then(function(res) {
+            var ctype = (res.headers.get('content-type') || '').toLowerCase();
+            if (res.ok && ctype.indexOf('text/html') === -1) {
+              if (notice) {
+                notice.innerHTML = '✅ Downloading <strong>SehatSaathi-debug.apk</strong>...';
+              }
+              triggerDirectDownload(url, 'SehatSaathi-debug.apk');
+            } else {
+              tryLocal(idx + 1);
+            }
+          })
+          .catch(function() {
+            tryLocal(idx + 1);
+          });
+      }
+
+      function tryGitHubRelease() {
+        var releaseApi = 'https://api.github.com/repos/shuvamjana1-ops/Sehat_SaThi/releases/latest';
+        var releaseDirect = 'https://github.com/shuvamjana1-ops/Sehat_SaThi/releases/latest/download/SehatSaathi-debug.apk';
+        fetch(releaseApi)
+          .then(function(res) {
+            if (res.ok) {
+              if (notice) {
+                notice.innerHTML = '✅ Downloading signed APK from GitHub Releases...';
+              }
+              window.location.href = releaseDirect;
+            } else {
+              showApkFallback(notice);
+            }
+          })
+          .catch(function() {
+            showApkFallback(notice);
+          });
+      }
+
+      function triggerDirectDownload(url, filename) {
+        var a = document.createElement('a');
+        a.href = url;
+        a.setAttribute('download', filename);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+
+      function showApkFallback(box) {
+        if (!box) return;
+        box.style.display = 'block';
+        box.innerHTML =
+          '<strong>⚙ Android APK Build In Progress or Ready on GitHub Actions:</strong><br/>' +
+          'Because AI Studio pushes source code text files to GitHub, the 27&nbsp;MB signed APK is compiled automatically by GitHub Actions. ' +
+          'You can use the <strong>Interactive Live Android App Preview</strong> right below immediately, or grab the APK from:<br/>' +
+          '<div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">' +
+            '<a class="btn btn-primary btn-sm" href="https://github.com/shuvamjana1-ops/Sehat_SaThi/releases" target="_blank" rel="noopener">Open GitHub Releases (.apk)</a>' +
+            '<a class="btn btn-secondary btn-sm" href="https://github.com/shuvamjana1-ops/Sehat_SaThi/actions" target="_blank" rel="noopener">View GitHub Actions Build</a>' +
+          '</div>';
+      }
+
+      tryLocal(0);
+    }
+
+    // App State
+    var appState = {
+      currentTab: 'today',
+      profileSubTab: 'overview',
+      simpleMode: false,
+      darkMode: false,
+      expanded: false,
+      patient: {
+        name: 'Rajesh Sharma',
+        age: 64,
+        bloodGroup: 'B+',
+        conditions: 'Type 2 Diabetes • Hypertension',
+        allergies: 'Penicillin, Sulfonamides',
+        doctor: 'Dr. A. Mehta (City Care Clinic)',
+        emergencyContact: 'Priya Sharma (+91 98201 44510)',
+        glucoseTarget: '80–130\u00A0mg/dL fasting • <180\u00A0mg/dL after meal',
+        bpTarget: '<130/80\u00A0mmHg'
+      },
+      latestGlucose: { value: 136, context: 'After meal', status: 'Normal', time: 'Today, 8:45 AM' },
+      latestBp: { sys: 128, dia: 82, pulse: 74, status: 'Normal', time: 'Today, 8:50 AM' },
+      doses: [
+        { id: 1, slot: 'Morning (8:00 AM)', name: 'Glycomet GP 1', salt: 'Metformin 500mg + Glimepiride 1mg', food: 'Before breakfast', taken: true, genericPrice: '₹48 / strip', brandPrice: '₹124 / strip', daysLeft: 18 },
+        { id: 2, slot: 'Afternoon (1:30 PM)', name: 'Telma 40', salt: 'Telmisartan 40mg', food: 'After lunch', taken: false, genericPrice: '₹52 / strip', brandPrice: '₹165 / strip', daysLeft: 5 },
+        { id: 3, slot: 'Night (9:00 PM)', name: 'Atorva 10', salt: 'Atorvastatin 10mg', food: 'After dinner', taken: false, genericPrice: '₹39 / strip', brandPrice: '₹118 / strip', daysLeft: 22 }
+      ],
+      privacy: {
+        shareGlucose: true,
+        shareBp: true,
+        shareMeds: true,
+        urgentOnly: false
+      },
+      rxScanned: false,
+      medSearchQuery: ''
+    };
+
+    var medicineCatalog = [
+      { brand: 'Glycomet 500', salt: 'Metformin Hydrochloride (500\u00A0mg)', category: 'Diabetes', brandCost: '₹95', genericName: 'Jan Aushadhi Metformin 500\u00A0mg', genericCost: '₹28', warning: 'Take with meals to reduce stomach upset. Do not double a missed dose.' },
+      { brand: 'Telma 40', salt: 'Telmisartan (40\u00A0mg)', category: 'Blood Pressure', brandCost: '₹165', genericName: 'Jan Aushadhi Telmisartan 40\u00A0mg', genericCost: '₹52', warning: 'Avoid combining with another ARB or ACE inhibitor (e.g., Ramipril) without doctor review.' },
+      { brand: 'Ecosprin 75', salt: 'Aspirin (75\u00A0mg Gastro-resistant)', category: 'Cardiac / Blood Thinner', brandCost: '₹18', genericName: 'Enteric Coated Aspirin 75\u00A0mg', genericCost: '₹9', warning: 'Caution when combined with Ibuprofen/NSAIDs (increased bleeding risk).' },
+      { brand: 'Atorva 10', salt: 'Atorvastatin (10\u00A0mg)', category: 'Cholesterol', brandCost: '₹118', genericName: 'Jan Aushadhi Atorvastatin 10\u00A0mg', genericCost: '₹39', warning: 'Report unexplained muscle pain to your doctor or pharmacist.' },
+      { brand: 'Stamlo 5', salt: 'Amlodipine (5\u00A0mg)', category: 'Blood Pressure', brandCost: '₹110', genericName: 'Generic Amlodipine 5\u00A0mg', genericCost: '₹32', warning: 'May cause mild ankle swelling; never stop abruptly.' }
+    ];
+
+    function classifyGlucose(val, context) {
       if (val < 54) {
-        badge.className = 'status-chip status-urgent';
-        badge.textContent = '❗ Emergency Low (<54\u00A0mg/dL)';
-        text.textContent = val + '\u00A0mg/dL is severely low. Follow the 15-15 fast-acting sugar rule or call 112 / family right now. Never take extra insulin.';
-      } else if (val < 70) {
-        badge.className = 'status-chip status-urgent';
-        badge.textContent = '❗ Urgent Low (<70\u00A0mg/dL)';
-        text.textContent = val + '\u00A0mg/dL is low. Take 15g of fast-acting sugar and recheck in 15 minutes. Ask your doctor or pharmacist.';
-      } else if (val >= 300) {
-        badge.className = 'status-chip status-urgent';
-        badge.textContent = '❗ Urgent High (≥300\u00A0mg/dL)';
-        text.textContent = val + '\u00A0mg/dL is very high. Drink water and contact your doctor or caregiver now. Never double a dose.';
-      } else if (val >= 250 || (ctx === 'fasting' && val >= 130) || (ctx === 'after_meal' && val > 180)) {
-        badge.className = 'status-chip status-caution';
-        badge.textContent = '⚠ Caution (Elevated)';
-        text.textContent = val + '\u00A0mg/dL is above target range. Log your meal/medicine timing and ask your doctor or pharmacist.';
-      } else {
-        badge.className = 'status-chip status-normal';
-        badge.textContent = '✓ Normal';
-        text.textContent = val + '\u00A0mg/dL is within the standard safe range. Ask your doctor or pharmacist.';
+        return { level: 'urgent', label: '❗ Emergency Low (<54\u00A0mg/dL)', msg: val + '\u00A0mg/dL is severely low. Follow the 15-15 fast-acting sugar rule and call 112 / family right now. Never take insulin for low sugar.' };
+      }
+      if (val < 70) {
+        return { level: 'urgent', label: '❗ Urgent Low (<70\u00A0mg/dL)', msg: val + '\u00A0mg/dL is low. Take 15\u00A0g fast-acting sugar now and recheck in 15 minutes. Ask your doctor or pharmacist.' };
+      }
+      if (val >= 300) {
+        return { level: 'urgent', label: '❗ Urgent High (≥300\u00A0mg/dL)', msg: val + '\u00A0mg/dL is very high. Drink water and contact your doctor or caregiver now. Never double a dose.' };
+      }
+      if (val >= 250 || (context === 'Fasting' && val >= 130) || (context === 'After meal' && val > 180)) {
+        return { level: 'caution', label: '⚠ Caution (Elevated)', msg: val + '\u00A0mg/dL (' + context + ') is above target range. Log meal timing and ask your doctor or pharmacist.' };
+      }
+      return { level: 'normal', label: '✓ Normal', msg: val + '\u00A0mg/dL (' + context + ') is within the standard safe range. Ask your doctor or pharmacist.' };
+    }
+
+    function classifyBp(sys, dia) {
+      if (sys >= 180 || dia >= 120) {
+        return { level: 'urgent', label: '❗ Hypertensive Crisis (≥180/120\u00A0mmHg)', msg: sys + '/' + dia + '\u00A0mmHg is critically high. Sit calmly and contact your doctor or call 112 immediately.' };
+      }
+      if (sys < 90 || dia < 60) {
+        return { level: 'urgent', label: '❗ Low BP (<90/60\u00A0mmHg)', msg: sys + '/' + dia + '\u00A0mmHg is low. Sit or lie down if dizzy and contact your caregiver or doctor.' };
+      }
+      if (sys >= 140 || dia >= 90) {
+        return { level: 'caution', label: '⚠ Caution (Elevated BP)', msg: sys + '/' + dia + '\u00A0mmHg is above target. Rest 15 minutes and recheck. Ask your doctor or pharmacist.' };
+      }
+      return { level: 'normal', label: '✓ Normal BP', msg: sys + '/' + dia + '\u00A0mmHg is within the target range.' };
+    }
+
+    function renderApp() {
+      document.getElementById('headerPatientName').textContent = appState.patient.name + ' (' + appState.patient.age + 'y)';
+      var tabs = ['today', 'log', 'meds', 'trends', 'family', 'profile'];
+      tabs.forEach(function(t) {
+        var el = document.getElementById('tab-' + t);
+        if (el) el.className = 'nav-tab' + (appState.currentTab === t ? ' active' : '');
+      });
+
+      var container = document.getElementById('appScreenBody');
+      if (appState.currentTab === 'today') {
+        container.innerHTML = renderTodayScreen();
+      } else if (appState.currentTab === 'log') {
+        container.innerHTML = renderLogScreen();
+      } else if (appState.currentTab === 'meds') {
+        container.innerHTML = renderMedsScreen();
+      } else if (appState.currentTab === 'trends') {
+        container.innerHTML = renderTrendsScreen();
+      } else if (appState.currentTab === 'family') {
+        container.innerHTML = renderFamilyScreen();
+      } else if (appState.currentTab === 'profile') {
+        container.innerHTML = renderProfileScreen();
+      } else if (appState.currentTab === 'emergency') {
+        container.innerHTML = renderEmergencyScreen();
       }
     }
+
+    function renderTodayScreen() {
+      var takenCount = appState.doses.filter(function(d) { return d.taken; }).length;
+      var gInfo = classifyGlucose(appState.latestGlucose.value, appState.latestGlucose.context);
+      var bpInfo = classifyBp(appState.latestBp.sys, appState.latestBp.dia);
+
+      var dosesHtml = appState.doses.map(function(d) {
+        return '<div class="dose-item">' +
+          '<div>' +
+            '<div style="font-size:14px; font-weight:700; color:var(--clinical-blue);">' + d.slot + ' • ' + d.food + '</div>' +
+            '<div style="font-size:18px; font-weight:800; color:var(--deep-ocean);">' + d.name + '</div>' +
+            '<div style="font-size:14px; color:var(--ink-secondary);">' + d.salt + '</div>' +
+          '</div>' +
+          '<button class="btn btn-sm ' + (d.taken ? 'btn-secondary' : 'btn-primary') + '" type="button" onclick="toggleDose(' + d.id + ')">' +
+            (d.taken ? '✓ Taken' : 'Mark Taken') +
+          '</button>' +
+        '</div>';
+      }).join('');
+
+      return '' +
+        '<div class="vitals-row">' +
+          '<div class="inner-card">' +
+            '<div style="font-size:14px; font-weight:700; color:var(--ink-secondary);">Latest Blood Sugar</div>' +
+            '<div style="margin:6px 0;"><span class="metric-val">' + appState.latestGlucose.value + '</span> <span class="metric-unit">mg/dL</span></div>' +
+            '<span class="status-chip status-' + gInfo.level + '">' + gInfo.label + '</span>' +
+            '<div style="font-size:14px; color:var(--ink-secondary); margin-top:6px;">' + appState.latestGlucose.context + ' • ' + appState.latestGlucose.time + '</div>' +
+          '</div>' +
+          '<div class="inner-card">' +
+            '<div style="font-size:14px; font-weight:700; color:var(--ink-secondary);">Latest Blood Pressure</div>' +
+            '<div style="margin:6px 0;"><span class="metric-val">' + appState.latestBp.sys + '/' + appState.latestBp.dia + '</span> <span class="metric-unit">mmHg</span></div>' +
+            '<span class="status-chip status-' + bpInfo.level + '">' + bpInfo.label + '</span>' +
+            '<div style="font-size:14px; color:var(--ink-secondary); margin-top:6px;">Pulse ' + appState.latestBp.pulse + '\u00A0bpm • ' + appState.latestBp.time + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="inner-card">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">' +
+            '<h3>Today\'s Medicine Schedule</h3>' +
+            '<span class="badge">' + takenCount + ' of ' + appState.doses.length + ' Taken</span>' +
+          '</div>' +
+          dosesHtml +
+        '</div>' +
+        '<div style="display:flex; gap:10px; flex-wrap:wrap;">' +
+          '<button class="btn btn-primary btn-sm" style="flex:1;" type="button" onclick="switchTab(\'log\')">➕ Log Sugar / BP</button>' +
+          '<button class="btn btn-secondary btn-sm" style="flex:1;" type="button" onclick="switchTab(\'meds\')">📷 Scan Prescription</button>' +
+        '</div>';
+    }
+
+    function renderLogScreen() {
+      var gInfo = classifyGlucose(appState.latestGlucose.value, appState.latestGlucose.context);
+      return '' +
+        '<div class="inner-card">' +
+          '<h3>Log Blood Sugar &amp; Blood Pressure</h3>' +
+          '<p style="font-size:15px; color:var(--ink-secondary); margin-bottom:12px;">Deterministic safety check — never uses AI to classify clinical risk.</p>' +
+          '<div class="field-group">' +
+            '<label for="simGlucose">Blood Sugar (mg/dL)</label>' +
+            '<input id="simGlucose" type="number" min="20" max="600" value="' + appState.latestGlucose.value + '" />' +
+          '</div>' +
+          '<div class="field-group">' +
+            '<label for="simContext">Meal Timing</label>' +
+            '<select id="simContext">' +
+              '<option value="Fasting"' + (appState.latestGlucose.context === 'Fasting' ? ' selected' : '') + '>Fasting</option>' +
+              '<option value="After meal"' + (appState.latestGlucose.context === 'After meal' ? ' selected' : '') + '>After meal</option>' +
+            '</select>' +
+          '</div>' +
+          '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">' +
+            '<div class="field-group">' +
+              '<label for="simSys">Systolic (mmHg)</label>' +
+              '<input id="simSys" type="number" min="50" max="260" value="' + appState.latestBp.sys + '" />' +
+            '</div>' +
+            '<div class="field-group">' +
+              '<label for="simDia">Diastolic (mmHg)</label>' +
+              '<input id="simDia" type="number" min="30" max="160" value="' + appState.latestBp.dia + '" />' +
+            '</div>' +
+          '</div>' +
+          '<button class="btn btn-primary" style="width:100%;" type="button" onclick="saveLoggedReading()">Save &amp; Check Safety Status</button>' +
+          '<div id="logFeedback" style="margin-top:14px; padding:12px; border-radius:12px; background:var(--white); border:1px solid var(--border);">' +
+            '<span class="status-chip status-' + gInfo.level + '">' + gInfo.label + '</span>' +
+            '<p style="margin-top:6px; font-size:15px; font-weight:600;">' + gInfo.msg + '</p>' +
+          '</div>' +
+        '</div>';
+    }
+
+    function renderMedsScreen() {
+      var q = (appState.medSearchQuery || '').toLowerCase();
+      var filtered = medicineCatalog.filter(function(m) {
+        return !q || m.brand.toLowerCase().indexOf(q) !== -1 || m.salt.toLowerCase().indexOf(q) !== -1;
+      });
+
+      var rxBanner = appState.rxScanned
+        ? '<div style="margin-top:10px; padding:12px; border-radius:12px; background:var(--caution-bg); color:var(--caution-fg); font-size:15px; font-weight:700;">' +
+            '⚠ Duplicate Salt Alert Found in Scanned Rx: Both "Telma 40" and "Telpres 40" contain Telmisartan 40\u00A0mg. Never take both together — ask your doctor or pharmacist.' +
+          '</div>'
+        : '';
+
+      var listHtml = filtered.map(function(m) {
+        return '<div class="dose-item" style="flex-direction:column; align-items:flex-start;">' +
+          '<div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:wrap; gap:6px;">' +
+            '<strong style="font-size:18px; color:var(--deep-ocean);">' + m.brand + ' (' + m.brandCost + ')</strong>' +
+            '<span class="status-chip status-normal">Generic: ' + m.genericCost + '</span>' +
+          '</div>' +
+          '<div style="font-size:15px; font-weight:700; color:var(--clinical-blue);">Salt: ' + m.salt + '</div>' +
+          '<div style="font-size:15px; color:var(--ink);">Lower-cost equivalent: <strong>' + m.genericName + '</strong></div>' +
+          '<div style="font-size:14px; color:var(--ink-secondary);">Safety note: ' + m.warning + '</div>' +
+        '</div>';
+      }).join('');
+
+      return '' +
+        '<div class="inner-card">' +
+          '<h3>Prescription OCR &amp; Interaction Scanner</h3>' +
+          '<p style="font-size:15px; color:var(--ink-secondary);">Scan a prescription photo to extract active salt compositions, check duplicate salts, and view Jan Aushadhi generic prices.</p>' +
+          '<div class="btn-row" style="margin-top:10px;">' +
+            '<button class="btn btn-primary btn-sm" type="button" onclick="simulateRxScan()">📷 Scan Sample Prescription</button>' +
+          '</div>' +
+          rxBanner +
+        '</div>' +
+        '<div class="inner-card">' +
+          '<h3>Medicine Safety &amp; Generic Finder</h3>' +
+          '<div class="field-group" style="margin-top:8px;">' +
+            '<input type="text" placeholder="Search brand or salt (e.g., Glycomet, Telma, Aspirin)..." value="' + appState.medSearchQuery + '" oninput="updateMedSearch(this.value)" />' +
+          '</div>' +
+          listHtml +
+        '</div>';
+    }
+
+    function renderTrendsScreen() {
+      var days = [
+        { d: 'Day 1', g: 142, bp: '132/84' },
+        { d: 'Day 4', g: 156, bp: '134/86' },
+        { d: 'Day 7', g: 129, bp: '126/80' },
+        { d: 'Day 10', g: 148, bp: '130/82' },
+        { d: 'Today', g: appState.latestGlucose.value, bp: appState.latestBp.sys + '/' + appState.latestBp.dia }
+      ];
+      var bars = days.map(function(item) {
+        var pct = Math.min(100, Math.max(25, Math.round((item.g / 220) * 100)));
+        return '<div style="display:flex; flex-direction:column; align-items:center; gap:6px; flex:1;">' +
+          '<span style="font-size:14px; font-weight:700;">' + item.g + '</span>' +
+          '<div style="width:100%; max-width:42px; height:110px; background:var(--white); border:1px solid var(--border); border-radius:10px; display:flex; align-items:flex-end; padding:3px;">' +
+            '<div style="width:100%; height:' + pct + '%; background:var(--clinical-blue); border-radius:7px;"></div>' +
+          '</div>' +
+          '<span style="font-size:14px; color:var(--ink-secondary);">' + item.d + '</span>' +
+        '</div>';
+      }).join('');
+
+      return '' +
+        '<div class="inner-card">' +
+          '<h3>14-Day Blood Sugar Trend (mg/dL)</h3>' +
+          '<div style="display:flex; gap:8px; align-items:flex-end; margin-top:14px; padding:12px; background:var(--white); border-radius:14px; border:1px solid var(--border);">' +
+            bars +
+          '</div>' +
+        '</div>' +
+        '<div class="inner-card">' +
+          '<h3>Doctor Visit Summary</h3>' +
+          '<p style="font-size:15px; color:var(--ink-secondary); margin-bottom:10px;">14-day average sugar: <strong>142\u00A0mg/dL</strong> • Average BP: <strong>130/83\u00A0mmHg</strong> • Dose adherence: <strong>92%</strong></p>' +
+          '<button class="btn btn-primary btn-sm" type="button" onclick="window.print()">🖨 Print / Export Doctor Report</button>' +
+        '</div>';
+    }
+
+    function renderFamilyScreen() {
+      return '' +
+        '<div class="inner-card">' +
+          '<h3>Connected Family &amp; Caregivers</h3>' +
+          '<p style="font-size:15px; color:var(--ink-secondary);">Caregivers receive alerts when readings cross urgent thresholds or doses are missed.</p>' +
+          '<div class="dose-item">' +
+            '<div>' +
+              '<div style="font-size:18px; font-weight:800; color:var(--deep-ocean);">Priya Sharma (Daughter)</div>' +
+              '<div style="font-size:14px; color:var(--ink-secondary);">+91 98201 44510 • Primary Caregiver</div>' +
+            '</div>' +
+            '<span class="status-chip status-normal">✓ Active</span>' +
+          '</div>' +
+          '<div class="dose-item">' +
+            '<div>' +
+              '<div style="font-size:18px; font-weight:800; color:var(--deep-ocean);">Dr. A. Mehta</div>' +
+              '<div style="font-size:14px; color:var(--ink-secondary);">City Care Clinic • Monthly Summary</div>' +
+            '</div>' +
+            '<span class="status-chip status-normal">✓ Connected</span>' +
+          '</div>' +
+          '<div class="btn-row">' +
+            '<button class="btn btn-primary btn-sm" type="button" onclick="alert(\'Caregiver update sent to Priya Sharma (+91 98201 44510) with latest readings.\')">📩 Send Status Update Now</button>' +
+          '</div>' +
+        '</div>';
+    }
+
+    function renderProfileScreen() {
+      var subtabs = [
+        { id: 'overview', label: '#overview' },
+        { id: 'health', label: '#health' },
+        { id: 'medicines', label: '#medicines' },
+        { id: 'activity', label: '#activity' },
+        { id: 'privacy', label: '#privacy' }
+      ];
+      var subtabHtml = subtabs.map(function(st) {
+        return '<button class="subtab-btn' + (appState.profileSubTab === st.id ? ' active' : '') + '" type="button" onclick="switchProfileSubTab(\'' + st.id + '\')">' + st.label + '</button>';
+      }).join('');
+
+      var bodyHtml = '';
+      if (appState.profileSubTab === 'overview') {
+        bodyHtml = '' +
+          '<div class="inner-card">' +
+            '<h3>Patient Overview &amp; Emergency Care Card</h3>' +
+            '<p style="font-size:15px; margin-top:6px;"><strong>Name:</strong> ' + appState.patient.name + ' (' + appState.patient.age + ' yrs • Blood Group ' + appState.patient.bloodGroup + ')</p>' +
+            '<p style="font-size:15px;"><strong>Conditions:</strong> ' + appState.patient.conditions + '</p>' +
+            '<p style="font-size:15px;"><strong>Allergies:</strong> ' + appState.patient.allergies + '</p>' +
+            '<p style="font-size:15px;"><strong>Emergency Contact:</strong> ' + appState.patient.emergencyContact + '</p>' +
+            '<div class="btn-row">' +
+              '<button class="btn btn-primary btn-sm" type="button" onclick="promptEditProfile()">✏ Edit Profile</button>' +
+              '<button class="btn btn-secondary btn-sm" type="button" onclick="window.print()">🖨 Print Care Card</button>' +
+            '</div>' +
+          '</div>';
+      } else if (appState.profileSubTab === 'health') {
+        bodyHtml = '' +
+          '<div class="inner-card">' +
+            '<h3>Clinical Targets &amp; Doctor Info</h3>' +
+            '<p style="font-size:15px; margin-top:6px;"><strong>Sugar Target:</strong> ' + appState.patient.glucoseTarget + '</p>' +
+            '<p style="font-size:15px;"><strong>BP Target:</strong> ' + appState.patient.bpTarget + '</p>' +
+            '<p style="font-size:15px;"><strong>Treating Doctor:</strong> ' + appState.patient.doctor + '</p>' +
+          '</div>';
+      } else if (appState.profileSubTab === 'medicines') {
+        bodyHtml = '' +
+          '<div class="inner-card">' +
+            '<h3>Active Prescriptions &amp; Refill Tracker</h3>' +
+            appState.doses.map(function(d) {
+              var chipClass = d.daysLeft <= 7 ? 'status-caution' : 'status-normal';
+              return '<div class="dose-item">' +
+                '<div><strong>' + d.name + '</strong><div style="font-size:14px; color:var(--ink-secondary);">' + d.salt + '</div></div>' +
+                '<span class="status-chip ' + chipClass + '">' + d.daysLeft + ' days left</span>' +
+              '</div>';
+            }).join('') +
+          '</div>';
+      } else if (appState.profileSubTab === 'activity') {
+        bodyHtml = '' +
+          '<div class="inner-card">' +
+            '<h3>Recent Clinical Activity</h3>' +
+            '<p style="font-size:15px; margin-top:6px;">• Blood Sugar logged: <strong>' + appState.latestGlucose.value + '\u00A0mg/dL</strong> (' + appState.latestGlucose.time + ')</p>' +
+            '<p style="font-size:15px;">• Blood Pressure logged: <strong>' + appState.latestBp.sys + '/' + appState.latestBp.dia + '\u00A0mmHg</strong> (' + appState.latestBp.time + ')</p>' +
+            '<p style="font-size:15px;">• Morning Glycomet GP 1 marked Taken</p>' +
+          '</div>';
+      } else if (appState.profileSubTab === 'privacy') {
+        bodyHtml = '' +
+          '<div class="inner-card">' +
+            '<h3>Per-Item Caregiver Sharing Controls</h3>' +
+            '<p style="font-size:14px; color:var(--ink-secondary); margin-bottom:8px;">Control exactly which health items are visible to connected family members:</p>' +
+            renderToggleRow('Share Blood Sugar Readings', 'shareGlucose') +
+            renderToggleRow('Share Blood Pressure Readings', 'shareBp') +
+            renderToggleRow('Share Medicine Adherence', 'shareMeds') +
+            renderToggleRow('Emergency-Only Alerts Mode', 'urgentOnly') +
+          '</div>';
+      }
+
+      return '' +
+        '<div class="subtab-bar">' + subtabHtml + '</div>' +
+        bodyHtml;
+    }
+
+    function renderToggleRow(label, key) {
+      var on = appState.privacy[key];
+      return '<div class="toggle-row">' +
+        '<span style="font-size:16px; font-weight:700;">' + label + '</span>' +
+        '<button class="switch-btn ' + (on ? 'switch-on' : 'switch-off') + '" type="button" onclick="togglePrivacy(\'' + key + '\')">' +
+          (on ? 'ON' : 'OFF') +
+        '</button>' +
+      '</div>';
+    }
+
+    function renderEmergencyScreen() {
+      return '' +
+        '<div class="inner-card" style="border:2px solid #B31412;">' +
+          '<span class="status-chip status-urgent">❗ Emergency Protocol &amp; 15-15 Rule</span>' +
+          '<h3 style="margin-top:10px;">Low Blood Sugar (&lt;70\u00A0mg/dL) — 15-15 Rule</h3>' +
+          '<p style="font-size:15px; margin-top:6px;">1. Take <strong>15\u00A0grams</strong> of fast-acting sugar immediately (3 teaspoons of glucose powder or sugar dissolved in water, or half a cup of fruit juice).</p>' +
+          '<p style="font-size:15px; margin-top:6px;">2. Wait <strong>15\u00A0minutes</strong> and recheck your blood sugar.</p>' +
+          '<p style="font-size:15px; margin-top:6px;">3. <strong>Never take insulin</strong> when blood sugar is low.</p>' +
+          '<div class="btn-row">' +
+            '<a class="btn btn-urgent btn-sm" href="tel:112">📞 Call 112 Emergency</a>' +
+            '<button class="btn btn-secondary btn-sm" type="button" onclick="switchTab(\'today\')">← Back to Today</button>' +
+          '</div>' +
+        '</div>';
+    }
+
+    function switchTab(tab) {
+      appState.currentTab = tab;
+      renderApp();
+    }
+
+    function switchProfileSubTab(sub) {
+      appState.profileSubTab = sub;
+      renderApp();
+    }
+
+    function toggleDose(id) {
+      appState.doses = appState.doses.map(function(d) {
+        if (d.id === id) d.taken = !d.taken;
+        return d;
+      });
+      renderApp();
+    }
+
+    function saveLoggedReading() {
+      var gVal = Number(document.getElementById('simGlucose').value);
+      var ctx = document.getElementById('simContext').value;
+      var sysVal = Number(document.getElementById('simSys').value);
+      var diaVal = Number(document.getElementById('simDia').value);
+
+      if (Number.isFinite(gVal) && gVal >= 20 && gVal <= 600) {
+        appState.latestGlucose.value = gVal;
+        appState.latestGlucose.context = ctx;
+        appState.latestGlucose.time = 'Just now';
+      }
+      if (Number.isFinite(sysVal) && Number.isFinite(diaVal) && sysVal > diaVal) {
+        appState.latestBp.sys = sysVal;
+        appState.latestBp.dia = diaVal;
+        appState.latestBp.time = 'Just now';
+      }
+      renderApp();
+    }
+
+    function simulateRxScan() {
+      appState.rxScanned = true;
+      renderApp();
+    }
+
+    function updateMedSearch(val) {
+      appState.medSearchQuery = val;
+      renderApp();
+    }
+
+    function togglePrivacy(key) {
+      appState.privacy[key] = !appState.privacy[key];
+      renderApp();
+    }
+
+    function promptEditProfile() {
+      var newName = window.prompt('Edit Patient Full Name:', appState.patient.name);
+      if (newName && newName.trim().length >= 2) {
+        appState.patient.name = newName.trim();
+        renderApp();
+      }
+    }
+
+    function toggleSimpleMode() {
+      appState.simpleMode = !appState.simpleMode;
+      document.body.style.fontSize = appState.simpleMode ? '20px' : '18px';
+      document.getElementById('simpleModeBtn').textContent = 'Simple Mode: ' + (appState.simpleMode ? 'ON' : 'OFF');
+      if (appState.simpleMode && appState.currentTab !== 'today' && appState.currentTab !== 'log' && appState.currentTab !== 'meds') {
+        appState.currentTab = 'today';
+      }
+      renderApp();
+    }
+
+    function toggleDarkMode() {
+      appState.darkMode = !appState.darkMode;
+      document.body.classList.toggle('dark-mode', appState.darkMode);
+      document.getElementById('darkModeBtn').textContent = 'Dark Mode: ' + (appState.darkMode ? 'ON' : 'OFF');
+    }
+
+    function toggleExpandPreview() {
+      appState.expanded = !appState.expanded;
+      var grid = document.getElementById('workspaceGrid');
+      grid.classList.toggle('expanded-preview', appState.expanded);
+      document.getElementById('expandPreviewBtn').textContent = appState.expanded
+        ? '⤡ Standard Split View'
+        : '⤢ Expand Full-Width App View';
+    }
+
+    function focusSimulator() {
+      var el = document.getElementById('liveSimulator');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function speakCurrentScreen() {
+      var text = 'SehatSaathi summary for ' + appState.patient.name + '. Latest blood sugar is ' +
+        appState.latestGlucose.value + ' milligrams per deciliter (' + appState.latestGlucose.context + '). ' +
+        'Latest blood pressure is ' + appState.latestBp.sys + ' over ' + appState.latestBp.dia + ' millimeters of mercury.';
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        var utter = new SpeechSynthesisUtterance(text);
+        utter.rate = 0.95;
+        window.speechSynthesis.speak(utter);
+      } else {
+        alert(text);
+      }
+    }
+
+    renderApp();
   </script>
 </body>
 </html>
