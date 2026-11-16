@@ -1,5 +1,6 @@
 package com.example.ui.schedule
 
+import android.annotation.SuppressLint
 import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -99,6 +100,7 @@ object ScheduleNotificationHelper {
     }
   }
 
+  @SuppressLint("MissingPermission")
   fun showDoseReminderNotification(context: Context, dose: SeededDoseEvent): Boolean {
     if (!hasNotificationPermission(context)) return false
     ensureChannel(context)
