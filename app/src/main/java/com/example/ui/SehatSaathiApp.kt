@@ -7,6 +7,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -139,6 +140,28 @@ fun SehatSaathiApp(
     val isDark = SehatPalette.current.isDark
     val toggleTheme: () -> Unit = { viewModel.toggleDarkMode(isDark) }
 
+    @Composable
+    fun ProtectedShell(
+      currentRoute: String,
+      content: @Composable (PaddingValues) -> Unit,
+    ) {
+      if (!uiState.session.isAuthenticated) return
+      SehatAppShell(
+        currentRoute = currentRoute,
+        isDemoMode = uiState.session.isDemoMode,
+        isOnline = uiState.effectiveOnline,
+        offlineQueueCount = uiState.offlineQueue.size,
+        refillAlertCount = refillAlertCount,
+        toastMessage = uiState.toastMessage,
+        onDismissToast = viewModel::dismissToast,
+        onSyncOfflineQueue = viewModel::syncOfflineQueue,
+        onToggleTheme = toggleTheme,
+        onNavigate = { route -> navigateInsideShell(navController, route) },
+        onOpenEmergency = { viewModel.openEmergencyScreenManually(null) },
+        content = content,
+      )
+    }
+
     Box(modifier = Modifier.fillMaxSize()) {
       if (uiState.isSessionLoaded) {
       NavHost(
@@ -201,15 +224,7 @@ fun SehatSaathiApp(
             InfoSection.entries.firstOrNull { it.name.equals(sectionArg, ignoreCase = true) }
               ?: InfoSection.SAFETY
           if (uiState.session.isAuthenticated) {
-            ProtectedShell(
-              currentRoute = AppRoutes.INFO_ROUTE,
-              uiState = uiState,
-              refillAlertCount = refillAlertCount,
-              onDismissToast = viewModel::dismissToast,
-              onSyncOfflineQueue = viewModel::syncOfflineQueue,
-              onToggleTheme = toggleTheme,
-              onNavigate = { route -> navigateInsideShell(navController, route) },
-            ) { padding ->
+            ProtectedShell(currentRoute = AppRoutes.INFO_ROUTE) { padding ->
               InfoPagesScreen(
                 initialSection = section,
                 isAuthenticated = true,
@@ -245,15 +260,7 @@ fun SehatSaathiApp(
         }
 
         composable(AppRoutes.DASHBOARD) {
-          ProtectedShell(
-            currentRoute = AppRoutes.DASHBOARD,
-            uiState = uiState,
-            refillAlertCount = refillAlertCount,
-            onDismissToast = viewModel::dismissToast,
-            onSyncOfflineQueue = viewModel::syncOfflineQueue,
-            onToggleTheme = toggleTheme,
-            onNavigate = { route -> navigateInsideShell(navController, route) },
-          ) { padding ->
+          ProtectedShell(currentRoute = AppRoutes.DASHBOARD) { padding ->
             DashboardScreen(
               uiState = uiState,
               contentPadding = padding,
@@ -262,20 +269,13 @@ fun SehatSaathiApp(
               onRunDemoScenario = viewModel::runDemoScenario,
               onResetDemo = viewModel::resetDemoData,
               onReplayTour = viewModel::replayGuidedTour,
+              onSetSimpleMode = viewModel::setSimpleMode,
             )
           }
         }
 
         composable(AppRoutes.LOG_READING) {
-          ProtectedShell(
-            currentRoute = AppRoutes.LOG_READING,
-            uiState = uiState,
-            refillAlertCount = refillAlertCount,
-            onDismissToast = viewModel::dismissToast,
-            onSyncOfflineQueue = viewModel::syncOfflineQueue,
-            onToggleTheme = toggleTheme,
-            onNavigate = { route -> navigateInsideShell(navController, route) },
-          ) { padding ->
+          ProtectedShell(currentRoute = AppRoutes.LOG_READING) { padding ->
             LogReadingScreen(
               uiState = uiState,
               contentPadding = padding,
@@ -294,15 +294,7 @@ fun SehatSaathiApp(
         }
 
         composable(AppRoutes.SCAN_RX) {
-          ProtectedShell(
-            currentRoute = AppRoutes.SCAN_RX,
-            uiState = uiState,
-            refillAlertCount = refillAlertCount,
-            onDismissToast = viewModel::dismissToast,
-            onSyncOfflineQueue = viewModel::syncOfflineQueue,
-            onToggleTheme = toggleTheme,
-            onNavigate = { route -> navigateInsideShell(navController, route) },
-          ) { padding ->
+          ProtectedShell(currentRoute = AppRoutes.SCAN_RX) { padding ->
             ScanPrescriptionScreen(
               uiState = uiState,
               contentPadding = padding,
@@ -324,15 +316,7 @@ fun SehatSaathiApp(
         }
 
         composable(AppRoutes.MEDICINES) {
-          ProtectedShell(
-            currentRoute = AppRoutes.MEDICINES,
-            uiState = uiState,
-            refillAlertCount = refillAlertCount,
-            onDismissToast = viewModel::dismissToast,
-            onSyncOfflineQueue = viewModel::syncOfflineQueue,
-            onToggleTheme = toggleTheme,
-            onNavigate = { route -> navigateInsideShell(navController, route) },
-          ) { padding ->
+          ProtectedShell(currentRoute = AppRoutes.MEDICINES) { padding ->
             MedicinesAndScheduleScreen(
               uiState = uiState,
               contentPadding = padding,
@@ -351,15 +335,7 @@ fun SehatSaathiApp(
         }
 
         composable(AppRoutes.TRENDS) {
-          ProtectedShell(
-            currentRoute = AppRoutes.TRENDS,
-            uiState = uiState,
-            refillAlertCount = refillAlertCount,
-            onDismissToast = viewModel::dismissToast,
-            onSyncOfflineQueue = viewModel::syncOfflineQueue,
-            onToggleTheme = toggleTheme,
-            onNavigate = { route -> navigateInsideShell(navController, route) },
-          ) { padding ->
+          ProtectedShell(currentRoute = AppRoutes.TRENDS) { padding ->
             TrendsScreen(
               uiState = uiState,
               contentPadding = padding,
@@ -371,15 +347,7 @@ fun SehatSaathiApp(
         }
 
         composable(AppRoutes.FAMILY) {
-          ProtectedShell(
-            currentRoute = AppRoutes.FAMILY,
-            uiState = uiState,
-            refillAlertCount = refillAlertCount,
-            onDismissToast = viewModel::dismissToast,
-            onSyncOfflineQueue = viewModel::syncOfflineQueue,
-            onToggleTheme = toggleTheme,
-            onNavigate = { route -> navigateInsideShell(navController, route) },
-          ) { padding ->
+          ProtectedShell(currentRoute = AppRoutes.FAMILY) { padding ->
             FamilyAlertsScreen(
               uiState = uiState,
               contentPadding = padding,
@@ -388,25 +356,20 @@ fun SehatSaathiApp(
               onAddCaregiverInvite = viewModel::addCaregiverInvite,
               onAcceptCaregiverDemo = viewModel::acceptCaregiverConsentDemo,
               onRevokeCaregiver = viewModel::revokeCaregiverConsent,
+              onSetCaregiverViewMode = viewModel::setCaregiverViewMode,
+              onToggleWeeklyDigestOptIn = viewModel::toggleWeeklyDigestOptIn,
               onBackHome = { navigateInsideShell(navController, AppRoutes.DASHBOARD) },
             )
           }
         }
 
         composable(AppRoutes.ACCOUNT) {
-          ProtectedShell(
-            currentRoute = AppRoutes.ACCOUNT,
-            uiState = uiState,
-            refillAlertCount = refillAlertCount,
-            onDismissToast = viewModel::dismissToast,
-            onSyncOfflineQueue = viewModel::syncOfflineQueue,
-            onToggleTheme = toggleTheme,
-            onNavigate = { route -> navigateInsideShell(navController, route) },
-          ) { padding ->
+          ProtectedShell(currentRoute = AppRoutes.ACCOUNT) { padding ->
             AccountScreen(
               uiState = uiState,
               contentPadding = padding,
               onSetThemePreference = viewModel::setThemePreference,
+              onSetSimpleMode = viewModel::setSimpleMode,
               onSaveProfile = viewModel::updatePatientProfile,
               onSaveReminderPrefs = viewModel::updateReminderPreferences,
               onUpdateThresholds = viewModel::updateRiskThresholds,
@@ -461,33 +424,6 @@ fun SehatSaathiApp(
     )
     }
   }
-}
-
-@Composable
-private fun ProtectedShell(
-  currentRoute: String,
-  uiState: SehatSaathiUiState,
-  refillAlertCount: Int,
-  onDismissToast: () -> Unit,
-  onSyncOfflineQueue: () -> Unit,
-  onToggleTheme: () -> Unit,
-  onNavigate: (String) -> Unit,
-  content: @Composable (androidx.compose.foundation.layout.PaddingValues) -> Unit,
-) {
-  if (!uiState.session.isAuthenticated) return
-  SehatAppShell(
-    currentRoute = currentRoute,
-    isDemoMode = uiState.session.isDemoMode,
-    isOnline = uiState.effectiveOnline,
-    offlineQueueCount = uiState.offlineQueue.size,
-    refillAlertCount = refillAlertCount,
-    toastMessage = uiState.toastMessage,
-    onDismissToast = onDismissToast,
-    onSyncOfflineQueue = onSyncOfflineQueue,
-    onToggleTheme = onToggleTheme,
-    onNavigate = onNavigate,
-    content = content,
-  )
 }
 
 private fun navigateInsideShell(

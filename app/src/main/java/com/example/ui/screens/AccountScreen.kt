@@ -91,6 +91,7 @@ fun AccountScreen(
   uiState: SehatSaathiUiState,
   contentPadding: PaddingValues,
   onSetThemePreference: (ThemePreference) -> Unit = {},
+  onSetSimpleMode: (Boolean) -> Unit = {},
   onSaveProfile: (name: String, age: Int, conditions: String, pharmacyName: String, pharmacyPhone: String) -> Unit,
   onSaveReminderPrefs: (ReminderPreferences) -> Unit,
   onUpdateThresholds: (RiskThresholdsConfig) -> Unit,
@@ -251,6 +252,35 @@ fun AccountScreen(
               }
             }
           }
+        }
+      }
+    }
+
+    // 0.5 Simple Mode (Elderly / Voice-first View)
+    item(key = "acc_simple_mode") {
+      SehatCard(
+        containerColor = c.surface,
+        modifier = Modifier.sehatScroll3DKeyed(listState, "acc_simple_mode", reducedMotion),
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween,
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          Column(modifier = Modifier.weight(1f)) {
+            Text("Simple Mode (Elderly & Voice)", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+              text = "Switches to a minimal, high-contrast layout with 4 big actions (Log reading, Medicines, Scan, Call family) and spoken confirmations.",
+              style = MaterialTheme.typography.bodyMedium,
+              color = c.inkSecondary,
+            )
+          }
+          Switch(
+            checked = uiState.simpleModeActive,
+            onCheckedChange = onSetSimpleMode,
+            modifier = Modifier.testTag("simple_mode_toggle"),
+          )
         }
       }
     }

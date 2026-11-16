@@ -1044,7 +1044,7 @@ fun ReadingResultCard(
     }
 
     Spacer(modifier = Modifier.height(12.dp))
-    SehatSecondaryButton(
+    SehatPrimaryButton(
       text = if (isExplainingAi) "Loading simple explanation..." else "Explain simply with AI",
       icon = Icons.Filled.AutoAwesome,
       enabled = !isExplainingAi,

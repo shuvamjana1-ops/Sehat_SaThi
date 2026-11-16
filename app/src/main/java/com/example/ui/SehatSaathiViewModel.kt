@@ -136,6 +136,9 @@ data class SehatSaathiUiState(
   val pendingDemoNavigationRoute: String? = null,
   val guidedTourDismissed: Boolean = true,
   val themePreference: ThemePreference = ThemePreference.SYSTEM,
+  val caregiverViewMode: Boolean = false,
+  val weeklyDigestOptedIn: Boolean = true,
+  val simpleModeActive: Boolean = false,
   val toastMessage: String? = null,
 ) {
   val effectiveOnline: Boolean
@@ -1672,6 +1675,20 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
         )
       }
     }
+  }
+
+  fun setCaregiverViewMode(enabled: Boolean) {
+    _uiState.update { it.copy(caregiverViewMode = enabled) }
+  }
+
+  fun toggleWeeklyDigestOptIn(optedIn: Boolean) {
+    _uiState.update { it.copy(weeklyDigestOptedIn = optedIn) }
+    showToast(if (optedIn) "Subscribed to weekly caregiver digest." else "Unsubscribed from weekly caregiver digest.")
+  }
+
+  fun setSimpleMode(active: Boolean) {
+    _uiState.update { it.copy(simpleModeActive = active) }
+    showToast(if (active) "Simple Mode enabled (Voice-first, large text)." else "Returned to full view.")
   }
 
   fun logout() {

@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.HealthAndSafety
+import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LightMode
@@ -152,6 +153,7 @@ fun SehatAppShell(
   onDismissToast: () -> Unit,
   onSyncOfflineQueue: () -> Unit,
   onNavigate: (String) -> Unit,
+  onOpenEmergency: () -> Unit = {},
   modifier: Modifier = Modifier,
   onToggleTheme: (() -> Unit)? = null,
   content: @Composable (PaddingValues) -> Unit,
@@ -271,6 +273,7 @@ fun SehatAppShell(
               onOpenCommandPalette = { showCommandPalette = true },
               onToggleTheme = onToggleTheme,
               onOpenAccount = { onNavigate(AppRoutes.ACCOUNT) },
+              onOpenEmergency = onOpenEmergency,
               onLogoClick = { onNavigate(AppRoutes.DASHBOARD) },
             )
 
@@ -491,6 +494,7 @@ private fun ShellTopBar(
   onOpenCommandPalette: () -> Unit,
   onToggleTheme: (() -> Unit)?,
   onOpenAccount: () -> Unit,
+  onOpenEmergency: () -> Unit,
   onLogoClick: () -> Unit,
 ) {
   val c = SehatPalette.current
@@ -603,6 +607,28 @@ private fun ShellTopBar(
               onClick = onToggleTheme,
               testTag = "shell_theme_toggle_btn",
             )
+          }
+
+          Surface(
+            onClick = onOpenEmergency,
+            shape = PillShape,
+            color = StatusUrgentFg,
+            modifier = Modifier.defaultMinSize(minHeight = 40.dp).testTag("sos_emergency_btn"),
+          ) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.Center,
+              modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            ) {
+              Icon(
+                imageVector = Icons.Filled.NotificationsActive,
+                contentDescription = null,
+                tint = PureWhite,
+                modifier = Modifier.size(16.dp),
+              )
+              Spacer(modifier = Modifier.width(4.dp))
+              Text("SOS", style = MaterialTheme.typography.titleSmall, color = PureWhite)
+            }
           }
 
           SehatIconButton(

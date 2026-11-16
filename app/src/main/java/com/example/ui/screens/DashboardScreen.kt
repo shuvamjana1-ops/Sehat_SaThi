@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DocumentScanner
+import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.NotificationsActive
@@ -97,6 +98,7 @@ fun DashboardScreen(
   onRunDemoScenario: (DemoScenario) -> Unit = {},
   onResetDemo: () -> Unit = {},
   onReplayTour: () -> Unit = {},
+  onSetSimpleMode: (Boolean) -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
   val c = SehatPalette.current
@@ -133,110 +135,177 @@ fun DashboardScreen(
           bottom = contentPadding.calculateBottomPadding() + 16.dp,
         ),
       verticalArrangement = Arrangement.spacedBy(16.dp),
-      modifier = Modifier.fillMaxSize().testTag("dashboard_list"),
+      modifier = Modifier.fillMaxSize().testTag(if (uiState.simpleModeActive) "simple_mode_dashboard" else "dashboard_list"),
     ) {
-      // Sculpted Deep Ocean Hero Greeting Banner + Sample Data Notice
-      item(key = "dash_hero") {
-        Column(
-          verticalArrangement = Arrangement.spacedBy(10.dp),
-          modifier = Modifier.sehatScroll3DKeyed(listState, "dash_hero", reducedMotion, 5f),
-        ) {
+      if (uiState.simpleModeActive) {
+        // SIMPLE MODE: Voice-first, large text, 4 big action cards
+        item(key = "simple_banner") {
           Surface(
             shape = CardShape,
-            color = DeepOcean,
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .shadow(
-                  elevation = 10.dp,
-                  shape = CardShape,
-                  ambientColor = DeepOceanDark.copy(alpha = 0.35f),
-                  spotColor = ClinicalBlue.copy(alpha = 0.45f),
-                ),
+            color = c.deepOcean,
+            modifier = Modifier.fillMaxWidth(),
           ) {
-            Box(
+            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
+              ) {
+                Text("Simple Mode (Voice-First)", style = MaterialTheme.typography.headlineMedium, color = PureWhite)
+                DemoPillBadge(text = "Active")
+              }
+              Text(
+                "High contrast, large text layout for elderly users. Spoken confirmation enabled.",
+                style = MaterialTheme.typography.bodyLarge,
+                color = Mist,
+              )
+              Spacer(modifier = Modifier.height(4.dp))
+              SehatSecondaryButton(
+                text = "Switch to full view",
+                onClick = { onSetSimpleMode(false) },
+                modifier = Modifier.fillMaxWidth(),
+                testTag = "switch_to_full_view_btn",
+              )
+            }
+          }
+        }
+
+        item(key = "simple_status_summary") {
+          SehatCard(containerColor = c.surface) {
+            Text("Quick Health Status", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+              text = latestReading?.let { "Latest: ${it.glucoseMgDl} mg/dL (${it.contextLabel})" } ?: "No reading today",
+              style = MaterialTheme.typography.bodyLarge.tabular(),
+              color = c.ink,
+            )
+            Text(
+              text = "Today's Doses: $takenCount / $totalDoses taken",
+              style = MaterialTheme.typography.bodyLarge.tabular(),
+              color = c.ink,
+            )
+          }
+        }
+
+        item(key = "simple_actions_hdr") {
+          Text("Primary Actions", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
+        }
+
+        item(key = "simple_action_log") {
+          SehatPrimaryButton(
+            text = "1. Log reading",
+            icon = Icons.Filled.Add,
+            onClick = { onNavigate(AppRoutes.LOG_READING) },
+            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp),
+            testTag = "simple_action_log",
+          )
+        }
+
+        item(key = "simple_action_meds") {
+          SehatPrimaryButton(
+            text = "2. My medicines",
+            icon = Icons.Filled.Medication,
+            onClick = { onNavigate(AppRoutes.MEDICINES) },
+            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp),
+            testTag = "simple_action_meds",
+          )
+        }
+
+        item(key = "simple_action_scan") {
+          SehatPrimaryButton(
+            text = "3. Scan prescription",
+            icon = Icons.Filled.DocumentScanner,
+            onClick = { onNavigate(AppRoutes.SCAN_RX) },
+            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp),
+            testTag = "simple_action_scan",
+          )
+        }
+
+        item(key = "simple_action_call") {
+          SehatPrimaryButton(
+            text = "4. Call family",
+            icon = Icons.Filled.Groups,
+            onClick = { onNavigate(AppRoutes.FAMILY) },
+            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp),
+            testTag = "simple_action_call",
+          )
+        }
+      } else {
+        // Sculpted Deep Ocean Hero Greeting Banner + Sample Data Notice
+        item(key = "dash_hero") {
+          Column(
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.sehatScroll3DKeyed(listState, "dash_hero", reducedMotion, 5f),
+          ) {
+            Surface(
+              shape = CardShape,
+              color = DeepOcean,
               modifier =
                 Modifier
                   .fillMaxWidth()
-                  .background(
-                    Brush.linearGradient(
-                      colors = listOf(DeepOceanDark, DeepOcean, ClinicalBlue),
-                    ),
+                  .shadow(
+                    elevation = 10.dp,
+                    shape = CardShape,
+                    ambientColor = DeepOceanDark.copy(alpha = 0.35f),
+                    spotColor = ClinicalBlue.copy(alpha = 0.45f),
                   ),
             ) {
-              Canvas(modifier = Modifier.matchParentSize()) {
-                drawCircle(
-                  color = PureWhite.copy(alpha = 0.08f),
-                  radius = size.minDimension * 0.65f,
-                  center = Offset(size.width * 0.92f, size.height * 0.15f),
-                )
-                drawCircle(
-                  color = PureWhite.copy(alpha = 0.05f),
-                  radius = size.minDimension * 0.45f,
-                  center = Offset(size.width * 0.72f, size.height * 0.95f),
-                )
-              }
-
-              Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.fillMaxWidth().padding(20.dp),
+              Box(
+                modifier =
+                  Modifier
+                    .fillMaxWidth()
+                    .background(
+                      Brush.linearGradient(
+                        colors = listOf(DeepOceanDark, DeepOcean, ClinicalBlue),
+                      ),
+                    ),
               ) {
-                Row(
-                  verticalAlignment = Alignment.Top,
-                  horizontalArrangement = Arrangement.SpaceBetween,
-                  modifier = Modifier.fillMaxWidth(),
-                ) {
-                  Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
-                    Text(
-                      text = "Hello, ${uiState.patient.name}",
-                      style = MaterialTheme.typography.displayMedium,
-                      color = PureWhite,
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                      text =
-                        "Age ${uiState.patient.age} · ${uiState.patient.conditions.joinToString(" · ")}",
-                      style = MaterialTheme.typography.bodyMedium,
-                      color = Mist,
-                    )
-                  }
-                  if (uiState.session.isDemoMode) {
-                    Surface(
-                      shape = PillShape,
-                      color = PureWhite.copy(alpha = 0.16f),
-                      border = BorderStroke(1.dp, PureWhite.copy(alpha = 0.35f)),
-                    ) {
-                      Text(
-                        text = "Seeded Demo",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = PureWhite,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                      )
-                    }
-                  }
+                Canvas(modifier = Modifier.matchParentSize()) {
+                  drawCircle(
+                    color = PureWhite.copy(alpha = 0.08f),
+                    radius = size.minDimension * 0.65f,
+                    center = Offset(size.width * 0.92f, size.height * 0.15f),
+                  )
+                  drawCircle(
+                    color = PureWhite.copy(alpha = 0.05f),
+                    radius = size.minDimension * 0.45f,
+                    center = Offset(size.width * 0.72f, size.height * 0.95f),
+                  )
                 }
 
-                FlowRow(
-                  horizontalArrangement = Arrangement.spacedBy(8.dp),
-                  verticalArrangement = Arrangement.spacedBy(8.dp),
+                Column(
+                  verticalArrangement = Arrangement.spacedBy(12.dp),
+                  modifier = Modifier.fillMaxWidth().padding(20.dp),
                 ) {
-                  Surface(
-                    shape = PillShape,
-                    color = PureWhite.copy(alpha = 0.14f),
-                    border = BorderStroke(1.dp, PureWhite.copy(alpha = 0.24f)),
+                  Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth(),
                   ) {
-                    Text(
-                      text = "Doses today: $takenCount/$totalDoses",
-                      style = MaterialTheme.typography.labelMedium.tabular(),
-                      color = PureWhite,
-                      modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    )
+                    Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+                      Text(
+                        text = "Hello, ${uiState.patient.name}",
+                        style = MaterialTheme.typography.displayMedium,
+                        color = PureWhite,
+                      )
+                      Spacer(modifier = Modifier.height(2.dp))
+                      Text(
+                        text =
+                          "Age ${uiState.patient.age} · ${uiState.patient.conditions.joinToString(" · ")}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Mist,
+                      )
+                    }
+                    if (uiState.session.isDemoMode) {
+                      DemoPillBadge(text = "Demo mode")
+                    }
                   }
+
                   if (latestReading != null) {
                     Surface(
                       shape = PillShape,
                       color = PureWhite.copy(alpha = 0.14f),
-                      border = BorderStroke(1.dp, PureWhite.copy(alpha = 0.24f)),
+                      modifier = Modifier.defaultMinSize(minHeight = 48.dp),
                     ) {
                       Text(
                         text = "Sugar ${latestReading.glucoseMgDl} · BP ${latestReading.systolic}/${latestReading.diastolic}",
@@ -249,59 +318,98 @@ fun DashboardScreen(
                 }
               }
             }
-          }
 
-          Surface(
-            shape = GlassTokens.GlassCornerShape,
-            color =
-              GlassTokens.cardFill(
-                c.mist,
-                highReadability = false,
-                reducedTransparency = reducedTransparency,
-                isDark = c.isDark,
-              ),
-            border = GlassTokens.borderStroke(c.hairlineBorder, isDark = c.isDark),
-            modifier = Modifier.fillMaxWidth(),
+            Surface(
+              shape = GlassTokens.GlassCornerShape,
+              color =
+                GlassTokens.cardFill(
+                  c.mist,
+                  highReadability = false,
+                  reducedTransparency = reducedTransparency,
+                  isDark = c.isDark,
+                ),
+              border = GlassTokens.borderStroke(c.hairlineBorder, isDark = c.isDark),
+              modifier = Modifier.fillMaxWidth(),
+            ) {
+              Text(
+                text =
+                  "Sample data for demonstration only. Verify medicine details with an official source before real use.",
+                style = MaterialTheme.typography.labelMedium,
+                color = c.deepOcean,
+                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+              )
+            }
+          }
+        }
+
+        // Quick Actions Tile
+        item(key = "dash_quick_actions") {
+          StaggeredTile(
+            visible = visibleTiles >= 1,
+            reducedMotion = reducedMotion,
+            modifier = Modifier.sehatScroll3DKeyed(listState, "dash_quick_actions", reducedMotion),
           ) {
-            Text(
-              text =
-                "Sample data for demonstration only. Verify medicine details with an official source before real use.",
-              style = MaterialTheme.typography.labelMedium,
-              color = c.deepOcean,
-              modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            QuickActionsTile(
+              onLogReading = { onNavigate(AppRoutes.LOG_READING) },
+              onScanRx = { onNavigate(AppRoutes.SCAN_RX) },
             )
           }
         }
-      }
 
-      // Quick Actions Tile (always prominent at top)
-      item(key = "dash_quick_actions") {
-        StaggeredTile(
-          visible = visibleTiles >= 1,
-          reducedMotion = reducedMotion,
-          modifier = Modifier.sehatScroll3DKeyed(listState, "dash_quick_actions", reducedMotion),
-        ) {
-          QuickActionsTile(
-            onLogReading = { onNavigate(AppRoutes.LOG_READING) },
-            onScanRx = { onNavigate(AppRoutes.SCAN_RX) },
-          )
-        }
-      }
-
-      if (twoColumns) {
-        item(key = "dash_row_1") {
-          Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .sehatScroll3DKeyed(listState, "dash_row_1", reducedMotion),
-          ) {
-            StaggeredTile(
-              visible = visibleTiles >= 2,
-              reducedMotion = reducedMotion,
-              modifier = Modifier.weight(1f),
+        if (twoColumns) {
+          item(key = "dash_twocol_1") {
+            Row(
+              horizontalArrangement = Arrangement.spacedBy(16.dp),
+              modifier = Modifier.fillMaxWidth(),
             ) {
+              Box(modifier = Modifier.weight(1f)) {
+                StaggeredTile(visible = visibleTiles >= 2, reducedMotion = reducedMotion) {
+                  TodayDosesTile(
+                    taken = takenCount,
+                    total = totalDoses,
+                    doses = uiState.dosesToday,
+                    onToggleDose = onToggleDoseTaken,
+                  )
+                }
+              }
+              Box(modifier = Modifier.weight(1f)) {
+                StaggeredTile(visible = visibleTiles >= 3, reducedMotion = reducedMotion) {
+                  VitalsTile(
+                    latestReading = latestReading,
+                    readings = uiState.readings,
+                    onViewTrends = { onNavigate(AppRoutes.TRENDS) },
+                  )
+                }
+              }
+            }
+          }
+
+          item(key = "dash_twocol_2") {
+            Row(
+              horizontalArrangement = Arrangement.spacedBy(16.dp),
+              modifier = Modifier.fillMaxWidth(),
+            ) {
+              Box(modifier = Modifier.weight(1f)) {
+                StaggeredTile(visible = visibleTiles >= 4, reducedMotion = reducedMotion) {
+                  RefillsTile(
+                    medicines = uiState.medicines,
+                    onOpenMedicines = { onNavigate(AppRoutes.MEDICINES) },
+                  )
+                }
+              }
+              Box(modifier = Modifier.weight(1f)) {
+                StaggeredTile(visible = visibleTiles >= 5, reducedMotion = reducedMotion) {
+                  AlertsTile(
+                    alerts = uiState.alerts,
+                    onOpenFamily = { onNavigate(AppRoutes.FAMILY) },
+                  )
+                }
+              }
+            }
+          }
+        } else {
+          item(key = "dash_doses") {
+            StaggeredTile(visible = visibleTiles >= 2, reducedMotion = reducedMotion) {
               TodayDosesTile(
                 taken = takenCount,
                 total = totalDoses,
@@ -309,11 +417,10 @@ fun DashboardScreen(
                 onToggleDose = onToggleDoseTaken,
               )
             }
-            StaggeredTile(
-              visible = visibleTiles >= 3,
-              reducedMotion = reducedMotion,
-              modifier = Modifier.weight(1f),
-            ) {
+          }
+
+          item(key = "dash_vitals") {
+            StaggeredTile(visible = visibleTiles >= 3, reducedMotion = reducedMotion) {
               VitalsTile(
                 latestReading = latestReading,
                 readings = uiState.readings,
@@ -321,31 +428,18 @@ fun DashboardScreen(
               )
             }
           }
-        }
 
-        item(key = "dash_row_2") {
-          Row(
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .sehatScroll3DKeyed(listState, "dash_row_2", reducedMotion),
-          ) {
-            StaggeredTile(
-              visible = visibleTiles >= 4,
-              reducedMotion = reducedMotion,
-              modifier = Modifier.weight(1f),
-            ) {
+          item(key = "dash_refills") {
+            StaggeredTile(visible = visibleTiles >= 4, reducedMotion = reducedMotion) {
               RefillsTile(
                 medicines = uiState.medicines,
                 onOpenMedicines = { onNavigate(AppRoutes.MEDICINES) },
               )
             }
-            StaggeredTile(
-              visible = visibleTiles >= 5,
-              reducedMotion = reducedMotion,
-              modifier = Modifier.weight(1f),
-            ) {
+          }
+
+          item(key = "dash_alerts") {
+            StaggeredTile(visible = visibleTiles >= 5, reducedMotion = reducedMotion) {
               AlertsTile(
                 alerts = uiState.alerts,
                 onOpenFamily = { onNavigate(AppRoutes.FAMILY) },
@@ -353,89 +447,36 @@ fun DashboardScreen(
             }
           }
         }
-      } else {
-        item(key = "dash_doses") {
+
+        item(key = "dash_timeline") {
           StaggeredTile(
-            visible = visibleTiles >= 2,
+            visible = visibleTiles >= 6,
             reducedMotion = reducedMotion,
-            modifier = Modifier.sehatScroll3DKeyed(listState, "dash_doses", reducedMotion),
+            modifier = Modifier.sehatScroll3DKeyed(listState, "dash_timeline", reducedMotion),
           ) {
-            TodayDosesTile(
-              taken = takenCount,
-              total = totalDoses,
-              doses = uiState.dosesToday,
-              onToggleDose = onToggleDoseTaken,
-            )
-          }
-        }
-        item(key = "dash_vitals") {
-          StaggeredTile(
-            visible = visibleTiles >= 3,
-            reducedMotion = reducedMotion,
-            modifier = Modifier.sehatScroll3DKeyed(listState, "dash_vitals", reducedMotion),
-          ) {
-            VitalsTile(
-              latestReading = latestReading,
-              readings = uiState.readings,
-              onViewTrends = { onNavigate(AppRoutes.TRENDS) },
-            )
-          }
-        }
-        item(key = "dash_refills") {
-          StaggeredTile(
-            visible = visibleTiles >= 4,
-            reducedMotion = reducedMotion,
-            modifier = Modifier.sehatScroll3DKeyed(listState, "dash_refills", reducedMotion),
-          ) {
-            RefillsTile(
+            MedicineTimelineTile(
               medicines = uiState.medicines,
               onOpenMedicines = { onNavigate(AppRoutes.MEDICINES) },
             )
           }
         }
-        item(key = "dash_alerts") {
-          StaggeredTile(
-            visible = visibleTiles >= 5,
-            reducedMotion = reducedMotion,
-            modifier = Modifier.sehatScroll3DKeyed(listState, "dash_alerts", reducedMotion),
-          ) {
-            AlertsTile(
-              alerts = uiState.alerts,
-              onOpenFamily = { onNavigate(AppRoutes.FAMILY) },
-            )
-          }
-        }
-      }
 
-      // Medicine Timeline Tile
-      item(key = "dash_timeline") {
-        StaggeredTile(
-          visible = visibleTiles >= 6,
-          reducedMotion = reducedMotion,
-          modifier = Modifier.sehatScroll3DKeyed(listState, "dash_timeline", reducedMotion),
-        ) {
-          MedicineTimelineTile(
-            medicines = uiState.medicines,
-            onOpenMedicines = { onNavigate(AppRoutes.MEDICINES) },
-          )
-        }
-      }
-
-      if (uiState.session.isDemoMode) {
-        item(key = "dash_demo_scenarios") {
-          StaggeredTile(
-            visible = visibleTiles >= 6,
-            reducedMotion = reducedMotion,
-            modifier = Modifier.sehatScroll3DKeyed(listState, "dash_demo_scenarios", reducedMotion),
-          ) {
-            DemoScenarioPanel(
-              activeScenario = uiState.activeDemoScenario,
-              activeCaption = uiState.activeDemoScenarioCaption,
-              onRunScenario = onRunDemoScenario,
-              onResetDemo = onResetDemo,
-              onReplayTour = onReplayTour,
-              showResetAndTourControls = true,
-            )
+        if (uiState.session.isDemoMode) {
+          item(key = "dash_demo_scenarios") {
+            StaggeredTile(
+              visible = visibleTiles >= 6,
+              reducedMotion = reducedMotion,
+              modifier = Modifier.sehatScroll3DKeyed(listState, "dash_demo_scenarios", reducedMotion),
+            ) {
+              DemoScenarioPanel(
+                activeScenario = uiState.activeDemoScenario,
+                activeCaption = uiState.activeDemoScenarioCaption,
+                onRunScenario = onRunDemoScenario,
+                onResetDemo = onResetDemo,
+                onReplayTour = onReplayTour,
+                showResetAndTourControls = true,
+              )
+            }
           }
         }
       }
@@ -451,7 +492,7 @@ private fun StaggeredTile(
   content: @Composable () -> Unit,
 ) {
   if (reducedMotion) {
-    androidx.compose.foundation.layout.Box(modifier = modifier) { content() }
+    Box(modifier = modifier) { content() }
   } else {
     AnimatedVisibility(
       visible = visible,
