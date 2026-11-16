@@ -178,28 +178,70 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
     viewModelScope.launch {
       val initialSession = repository.sessionFlow.first()
       _uiState.update { state ->
+        val syncedPatient =
+          if (initialSession.isAuthenticated && initialSession.displayName.isNotBlank()) {
+            val clean = initialSession.displayName.trim()
+            val slug = clean.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), ".").trim('.').ifEmpty { "patient" }
+            val nextHandle =
+              if (state.patient.handle.equals("sunita.devi", ignoreCase = true) && !clean.equals("Sunita Devi", ignoreCase = true)) {
+                slug
+              } else {
+                state.patient.handle
+              }
+            state.patient.copy(name = clean, handle = nextHandle)
+          } else {
+            DemoSeedData.patient
+          }
+        val syncedAlerts =
+          if (!syncedPatient.name.equals("Sunita Devi", ignoreCase = true)) {
+            state.alerts.map { a ->
+              a.copy(
+                message = a.message.replace("Sunita Devi", syncedPatient.name, ignoreCase = true),
+                isDemo = initialSession.isDemoMode,
+              )
+            }
+          } else {
+            state.alerts
+          }
         state.copy(
           isSessionLoaded = true,
           session = initialSession,
           preloaderProgress = 0.75f,
-          patient =
-            if (initialSession.isAuthenticated && initialSession.displayName.isNotBlank()) {
-              DemoSeedData.patient.copy(name = initialSession.displayName)
-            } else {
-              DemoSeedData.patient
-            },
+          patient = syncedPatient,
+          alerts = syncedAlerts,
         )
       }
       repository.sessionFlow.collect { session ->
         _uiState.update { state ->
+          val syncedPatient =
+            if (session.isAuthenticated && session.displayName.isNotBlank()) {
+              val clean = session.displayName.trim()
+              val slug = clean.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), ".").trim('.').ifEmpty { "patient" }
+              val nextHandle =
+                if (state.patient.handle.equals("sunita.devi", ignoreCase = true) && !clean.equals("Sunita Devi", ignoreCase = true)) {
+                  slug
+                } else {
+                  state.patient.handle
+                }
+              state.patient.copy(name = clean, handle = nextHandle)
+            } else {
+              DemoSeedData.patient
+            }
+          val syncedAlerts =
+            if (!syncedPatient.name.equals("Sunita Devi", ignoreCase = true)) {
+              state.alerts.map { a ->
+                a.copy(
+                  message = a.message.replace("Sunita Devi", syncedPatient.name, ignoreCase = true),
+                  isDemo = session.isDemoMode,
+                )
+              }
+            } else {
+              state.alerts
+            }
           state.copy(
             session = session,
-            patient =
-              if (session.isAuthenticated && session.displayName.isNotBlank()) {
-                state.patient.copy(name = session.displayName)
-              } else {
-                DemoSeedData.patient
-              },
+            patient = syncedPatient,
+            alerts = syncedAlerts,
           )
         }
       }
@@ -305,7 +347,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
   }
 
   private fun applyDemoScenarioInternal(scenario: DemoScenario) {
-    val patientName = DemoSeedData.patient.name
+    val patientName = _uiState.value.patient.name.ifBlank { DemoSeedData.patient.name }
     val config = _uiState.value.thresholdsConfig
     val nowMs = System.currentTimeMillis()
 
@@ -1066,7 +1108,14 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
   }
 
   fun loadDemoSamplePrescription() {
-    val sampleBitmap = runCatching { createSamplePrescriptionBitmap() }.getOrNull()
+    val currentPatient = _uiState.value.patient
+    val sampleBitmap =
+      runCatching {
+        createSamplePrescriptionBitmap(
+          patientName = currentPatient.name,
+          patientAge = currentPatient.age,
+        )
+      }.getOrNull()
     val demoExtracted =
       listOf(
         ExtractedRxMedicine(
@@ -1430,32 +1479,63 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
         .map { ProfileDomain.sanitizeText(it, 48) }
         .filter { it.isNotEmpty() }
         .ifEmpty { _uiState.value.patient.conditions }
-    _uiState.update { state ->
-      state.copy(
-        patient =
-          state.patient.copy(
-            name = cleanedName,
-            age = age.coerceIn(1, 120),
-            conditions = parsedConditions,
-            pharmacyName = ProfileDomain.sanitizeText(pharmacyName, 80).ifEmpty { state.patient.pharmacyName },
-            pharmacyPhone = ProfileDomain.sanitizeText(pharmacyPhone, 24).ifEmpty { state.patient.pharmacyPhone },
-          ),
-        toastMessage = "Profile updated",
+    val current = _uiState.value.patient
+    val updatedPatient =
+      current.copy(
+        name = cleanedName,
+        age = age.coerceIn(1, 120),
+        conditions = parsedConditions,
+        pharmacyName = ProfileDomain.sanitizeText(pharmacyName, 80).ifEmpty { current.pharmacyName },
+        pharmacyPhone = ProfileDomain.sanitizeText(pharmacyPhone, 24).ifEmpty { current.pharmacyPhone },
       )
-    }
+    updateFullPatientProfile(updatedPatient, _uiState.value.reminderPrefs)
   }
 
   fun updateFullPatientProfile(
     updatedPatient: PatientProfile,
     updatedReminders: ReminderPreferences? = null,
   ) {
+    val cleanedName =
+      ProfileDomain.sanitizeText(updatedPatient.name, ProfileDomain.MAX_NAME_LENGTH)
+        .ifEmpty { _uiState.value.patient.name }
+    val slug =
+      cleanedName.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), ".").trim('.').ifEmpty { "patient" }
+    val isSunitaDemoName = cleanedName.equals(DemoSeedData.patient.name, ignoreCase = true)
+    val resolvedHandle =
+      if (
+        updatedPatient.handle.isBlank() ||
+          (updatedPatient.handle.equals("sunita.devi", ignoreCase = true) && !isSunitaDemoName)
+      ) {
+        slug
+      } else {
+        updatedPatient.handle
+      }
+    val finalPatient = updatedPatient.copy(name = cleanedName, handle = resolvedHandle)
+
+    var persistedEmail = ""
+    var persistedDemoMode = false
+
     _uiState.update { state ->
+      val currentEmail = state.session.email.trim()
+      val nextEmail =
+        if (
+          !isSunitaDemoName &&
+            (currentEmail.isEmpty() || currentEmail.equals("sunita.demo@sehatsaathi.local", ignoreCase = true))
+        ) {
+          "$slug@sehatsaathi.app"
+        } else {
+          currentEmail
+        }
+      val nextDemoMode = if (!isSunitaDemoName) false else state.session.isDemoMode
+      persistedEmail = nextEmail
+      persistedDemoMode = nextDemoMode
+
       // Keep caregivers synchronized with emergency contacts so SOS and family alerts stay consistent
       val updatedCaregivers =
-        if (updatedPatient.emergencyContacts.isNotEmpty()) {
+        if (finalPatient.emergencyContacts.isNotEmpty()) {
           val existingByIdOrPhone = state.caregivers.associateBy { it.phone.filter { ch -> ch.isDigit() } }
           val syncedFromEmergency =
-            updatedPatient.emergencyContacts.mapIndexed { idx, ec ->
+            finalPatient.emergencyContacts.mapIndexed { idx, ec ->
               val match = existingByIdOrPhone[ec.phone.filter { ch -> ch.isDigit() }]
               SeededCaregiver(
                 id = match?.id ?: ec.id,
@@ -1478,11 +1558,41 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
           state.caregivers
         }
 
+      val updatedAlerts =
+        if (!isSunitaDemoName) {
+          state.alerts.map { alert ->
+            alert.copy(
+              message =
+                alert.message
+                  .replace("Sunita Devi", cleanedName, ignoreCase = true)
+                  .replace(state.patient.name, cleanedName, ignoreCase = true),
+              isDemo = nextDemoMode,
+            )
+          }
+        } else {
+          state.alerts
+        }
+
       state.copy(
-        patient = updatedPatient,
+        session =
+          state.session.copy(
+            displayName = cleanedName,
+            email = nextEmail,
+            isDemoMode = nextDemoMode,
+          ),
+        patient = finalPatient,
         reminderPrefs = updatedReminders ?: state.reminderPrefs,
         caregivers = updatedCaregivers,
-        toastMessage = "Profile updated",
+        alerts = updatedAlerts,
+        toastMessage = "Profile updated for $cleanedName",
+      )
+    }
+
+    viewModelScope.launch {
+      repository.updateProfileIdentity(
+        name = cleanedName,
+        email = persistedEmail,
+        isDemoMode = persistedDemoMode,
       )
     }
   }

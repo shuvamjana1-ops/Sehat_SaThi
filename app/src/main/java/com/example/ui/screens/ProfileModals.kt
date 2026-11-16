@@ -346,7 +346,26 @@ fun EditProfileModal(
             SehatTextField(
               label = "Full name (required · ${fullName.trim().length}/${ProfileDomain.MAX_NAME_LENGTH})",
               value = fullName,
-              onValueChange = { if (it.length <= ProfileDomain.MAX_NAME_LENGTH + 5) fullName = it },
+              onValueChange = { nextName ->
+                if (nextName.length <= ProfileDomain.MAX_NAME_LENGTH + 5) {
+                  val prevSlug =
+                    fullName.trim().lowercase().replace(Regex("[^a-z0-9]+"), ".").trim('.')
+                  val currentCleanHandle = handle.trim().removePrefix("@").lowercase()
+                  fullName = nextName
+                  if (currentCleanHandle == "sunita.devi" || currentCleanHandle == prevSlug) {
+                    val nextSlug =
+                      nextName
+                        .trim()
+                        .lowercase()
+                        .replace(Regex("[^a-z0-9]+"), ".")
+                        .trim('.')
+                        .take(ProfileDomain.MAX_HANDLE_LENGTH)
+                    if (nextSlug.isNotEmpty()) {
+                      handle = nextSlug
+                    }
+                  }
+                }
+              },
               errorText = nameVal.errorMessage,
               helperText = "2 to 60 characters",
               testTag = "edit_profile_name_input",
@@ -358,7 +377,7 @@ fun EditProfileModal(
               onValueChange = { if (it.length <= ProfileDomain.MAX_HANDLE_LENGTH + 5) handle = it },
               errorText = handleVal.errorMessage,
               helperText = "Letters, numbers, dot (.) and underscore (_)",
-              placeholder = "sunita.devi",
+              placeholder = "your.name",
               testTag = "edit_profile_handle_input",
             )
 

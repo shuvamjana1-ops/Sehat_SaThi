@@ -113,14 +113,36 @@ class AuthSessionRepository(private val context: Context) {
     }
   }
 
-  // Clearly labelled Demo-mode local account session (no custom password hashing;
-  // real Firebase Google Sign-In / backend auth is wired when cloud backend is provisioned).
+  // Local account session: marks isDemoMode = false when a real user name/email is used
   suspend fun startLocalAccountSession(name: String, email: String) {
+    val cleanName = name.trim().ifEmpty { "Patient" }
+    val cleanEmail = email.trim().lowercase()
+    val isSunitaDemo =
+      cleanName.equals(DemoSeedData.patient.name, ignoreCase = true) &&
+        (cleanEmail.isEmpty() || cleanEmail == "sunita.demo@sehatsaathi.local")
     context.sehatDataStore.edit { prefs ->
       prefs[Keys.IS_AUTH] = true
-      prefs[Keys.IS_DEMO] = true
-      prefs[Keys.DISPLAY_NAME] = name.trim().ifEmpty { "Patient" }
-      prefs[Keys.EMAIL] = email.trim().lowercase()
+      prefs[Keys.IS_DEMO] = isSunitaDemo
+      prefs[Keys.DISPLAY_NAME] = cleanName
+      prefs[Keys.EMAIL] = cleanEmail
+    }
+  }
+
+  suspend fun updateProfileIdentity(
+    name: String,
+    email: String,
+    isDemoMode: Boolean,
+  ) {
+    val cleanName = name.trim()
+    val cleanEmail = email.trim().lowercase()
+    context.sehatDataStore.edit { prefs ->
+      if (cleanName.isNotEmpty()) {
+        prefs[Keys.DISPLAY_NAME] = cleanName
+      }
+      if (cleanEmail.isNotEmpty()) {
+        prefs[Keys.EMAIL] = cleanEmail
+      }
+      prefs[Keys.IS_DEMO] = isDemoMode
     }
   }
 

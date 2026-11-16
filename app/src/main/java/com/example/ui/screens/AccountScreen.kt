@@ -910,7 +910,20 @@ private fun ProfileHeaderHeroCard(
       }
 
       // Email line
-      val displayEmail = email.ifBlank { "sunita.demo@sehatsaathi.local" }
+      val fallbackSlug =
+        patient.handle
+          .removePrefix("@")
+          .ifBlank { patient.name.lowercase().replace(Regex("[^a-z0-9]+"), ".").trim('.') }
+          .ifBlank { "patient" }
+      val displayEmail =
+        if (
+          !patient.name.equals("Sunita Devi", ignoreCase = true) &&
+            (email.isBlank() || email.equals("sunita.demo@sehatsaathi.local", ignoreCase = true))
+        ) {
+          "$fallbackSlug@sehatsaathi.app"
+        } else {
+          email.ifBlank { "sunita.demo@sehatsaathi.local" }
+        }
       val isRealEmail = !isDemoMode && !displayEmail.endsWith(".local", ignoreCase = true)
       if (isRealEmail) {
         Text(

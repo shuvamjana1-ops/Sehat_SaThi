@@ -85,7 +85,10 @@ object GuidedTourCatalog {
  * Generates a lightweight bundled sample prescription image for the Demo scenario so the
  * scanner review step always displays a realistic preview without bundling large binary assets.
  */
-fun createSamplePrescriptionBitmap(): Bitmap {
+fun createSamplePrescriptionBitmap(
+  patientName: String = "Sunita Devi",
+  patientAge: Int = 66,
+): Bitmap {
   val width = 840
   val height = 980
   val bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
@@ -121,7 +124,7 @@ fun createSamplePrescriptionBitmap(): Bitmap {
   canvas.drawText("Dr. R. Mehta  ·  Date: 15 Nov 2026", 56f, 142f, subPaint)
   canvas.drawLine(56f, 170f, width - 56f, 170f, borderPaint)
 
-  canvas.drawText("Patient: Sunita Devi (Age 66)", 56f, 224f, rxPaint)
+  canvas.drawText("Patient: $patientName (Age $patientAge)", 56f, 224f, rxPaint)
   canvas.drawText("Rx:", 56f, 290f, headerPaint)
   canvas.drawText("1. Tab Brufen 400 mg   —   BD (After food) x 5d", 68f, 360f, rxPaint)
   canvas.drawText("2. Tab Telma 40 mg     —   OD (Morning) x 30d", 68f, 440f, rxPaint)
