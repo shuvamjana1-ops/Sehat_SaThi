@@ -2583,6 +2583,33 @@
     </div>
   </div>
 
+  <!-- Judge APK Evaluation Popup Modal -->
+  <div class="dialog-backdrop is-open" id="judgeApkModalBackdrop" aria-hidden="false">
+    <div class="dialog-box" role="dialog" aria-modal="true" aria-labelledby="judgeApkModalTitle">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+        <div>
+          <span class="demo-tag" style="margin-bottom:8px;">Judge Evaluation Notice</span>
+          <div id="judgeApkModalTitle" style="font-size:1.35rem; font-weight:800; color:var(--deep-ocean); line-height:1.25; letter-spacing:-0.02em;">
+            Please download the Android APK for full evaluation
+          </div>
+        </div>
+        <button type="button" id="closeJudgeModalBtn" class="btn btn-secondary-light" style="min-height:44px; padding:6px 14px;" aria-label="Close judge notice">Close</button>
+      </div>
+      <p style="font-size:1rem; color:var(--ink-secondary); line-height:1.6;">
+        Judges must download and install the signed Android APK to evaluate the complete native Jetpack Compose application, including Care AI (Do's &amp; Don'ts advisor and multi-turn Care Chat), camera prescription scanning, voice reading input, offline 1-page PDF doctor summary export, and native 112/WhatsApp emergency handoffs.
+      </p>
+      <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:4px;">
+        <a href="./SehatSaathi-debug.apk" id="judgeModalDownloadBtn" class="btn btn-clinical btn-pill" style="flex:1; min-width:220px;" download>
+          Download Signed APK
+          <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+        </a>
+        <button type="button" id="judgeModalContinueWebBtn" class="btn btn-secondary-light btn-pill">
+          Continue to web preview
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Lightweight Toast Notification -->
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true">
     <div class="ss-toast" id="ssToast" role="status" hidden>
@@ -2835,6 +2862,7 @@
         if (e.key === 'Escape') {
           if (mobileDrawer && mobileDrawer.classList.contains('is-open')) setDrawerOpen(false);
           closeAppDialog();
+          closeJudgeApkModal();
         }
         if (e.key === 'Tab' && mobileDrawer && mobileDrawer.classList.contains('is-open')) {
           var focusables = mobileDrawer.querySelectorAll('a, button');
@@ -3393,6 +3421,32 @@
       if (dialogBackdrop) {
         dialogBackdrop.addEventListener('click', function (e) {
           if (e.target === dialogBackdrop) closeAppDialog();
+        });
+      }
+
+      // 10b. Judge APK Evaluation Popup Modal
+      var judgeModalBackdrop = document.getElementById('judgeApkModalBackdrop');
+      var closeJudgeModalBtn = document.getElementById('closeJudgeModalBtn');
+      var judgeModalContinueWebBtn = document.getElementById('judgeModalContinueWebBtn');
+      var judgeModalDownloadBtn = document.getElementById('judgeModalDownloadBtn');
+
+      function closeJudgeApkModal() {
+        if (!judgeModalBackdrop) return;
+        judgeModalBackdrop.classList.remove('is-open');
+        judgeModalBackdrop.setAttribute('aria-hidden', 'true');
+      }
+
+      if (closeJudgeModalBtn) closeJudgeModalBtn.addEventListener('click', closeJudgeApkModal);
+      if (judgeModalContinueWebBtn) judgeModalContinueWebBtn.addEventListener('click', closeJudgeApkModal);
+      if (judgeModalDownloadBtn) {
+        judgeModalDownloadBtn.addEventListener('click', function () {
+          showToast('Downloading SehatSaathi Android APK for evaluation.');
+          setTimeout(closeJudgeApkModal, 350);
+        });
+      }
+      if (judgeModalBackdrop) {
+        judgeModalBackdrop.addEventListener('click', function (e) {
+          if (e.target === judgeModalBackdrop) closeJudgeApkModal();
         });
       }
 
