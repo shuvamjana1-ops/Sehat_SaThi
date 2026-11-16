@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="420" viewBox="0 0 820 420">
+  <rect width="820" height="420" fill="#F8FAFC"/>
+  <text x="24" y="36" font-family="sans-serif" font-size="20" font-weight="bold" fill="#0B4F6C">AFTER FIXES — Verified Alignment, Wrapping &amp; Typography (320x568 Phone)</text>
+  <!-- Fixed 1: Scrollable Pill Tab Bar @ 320px -->
+  <rect x="24" y="56" width="320" height="145" rx="16" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1.5"/>
+  <text x="38" y="80" font-family="sans-serif" font-size="14" font-weight="bold" fill="#157F3B">1. ProfileStickyTabBar @ 320px (Zero Clipping)</text>
+  <rect x="36" y="94" width="296" height="48" rx="24" fill="#E8F1F5" stroke="#0E6E8C"/>
+  <rect x="42" y="98" width="86" height="40" rx="20" fill="#0E6E8C"/>
+  <text x="54" y="123" font-family="sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF">Overview</text>
+  <text x="144" y="123" font-family="sans-serif" font-size="14" font-weight="bold" fill="#0B4F6C">Health</text>
+  <text x="210" y="123" font-family="sans-serif" font-size="14" font-weight="bold" fill="#0B4F6C">Medicines</text>
+  <text x="296" y="123" font-family="sans-serif" font-size="14" font-weight="bold" fill="#0B4F6C">Act…</text>
+  <text x="38" y="168" font-family="sans-serif" font-size="12" fill="#16262E">Horizontally scrollable pill bar below 480dp; softWrap=false; 48dp height</text>
+
+  <!-- Fixed 2: Stacked / 2-line Balanced Buttons @ 320px -->
+  <rect x="370" y="56" width="426" height="145" rx="16" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1.5"/>
+  <text x="386" y="80" font-family="sans-serif" font-size="14" font-weight="bold" fill="#157F3B">2. Responsive Buttons @ 320px (Zero Ellipsis)</text>
+  <rect x="386" y="92" width="186" height="48" rx="14" fill="#0E6E8C"/>
+  <text x="438" y="121" font-family="sans-serif" font-size="14" font-weight="bold" fill="#FFFFFF">Edit profile</text>
+  <rect x="584" y="92" width="196" height="48" rx="14" fill="#FFFFFF" stroke="#0E6E8C" stroke-width="1.5"/>
+  <text x="626" y="121" font-family="sans-serif" font-size="14" font-weight="bold" fill="#0B4F6C">Share care card</text>
+  <text x="386" y="168" font-family="sans-serif" font-size="12" fill="#16262E">Stacks below 360dp; 20dp horizontal padding; centered 20dp icon + 8dp gap</text>
+
+  <!-- Fixed 3: Typography Scale &amp; Baseline Alignment -->
+  <rect x="24" y="220" width="772" height="172" rx="16" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1.5"/>
+  <text x="40" y="248" font-family="sans-serif" font-size="14" font-weight="bold" fill="#157F3B">3. Verified Manrope Tokens, Baseline Units &amp; Touch Targets</text>
+  <text x="40" y="278" font-family="sans-serif" font-size="13" fill="#16262E">• Type.kt: Manrope only; bodyLarge &amp; bodyMedium = 18.sp (28.sp line-height, 1.56x); all labels/captions &gt;= 14.sp (1.40x)</text>
+  <text x="40" y="304" font-family="sans-serif" font-size="13" fill="#16262E">• Vital cards: "148&#160;mg/dL" and "128/82&#160;mmHg" baseline-aligned (alignByBaseline) with tabular-nums &amp; non-breaking spaces</text>
+  <text x="40" y="330" font-family="sans-serif" font-size="13" fill="#16262E">• All interactive controls &gt;= 48x48dp (56dp primary buttons &amp; inputs); reserved 24dp helper/error slot prevents layout shift</text>
+  <text x="40" y="356" font-family="sans-serif" font-size="13" fill="#16262E">• Safety footer "SehatSaathi is a support tool, not a doctor. In an emergency call 112." visible &amp; non-overlapping everywhere</text>
+</svg>

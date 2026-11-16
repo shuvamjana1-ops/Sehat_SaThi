@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844">
+  <rect width="390" height="844" fill="#0F202A"/>
+  <text x="24" y="64" font-family="Manrope, sans-serif" font-size="24" font-weight="800" fill="#7CC6E8">Family &amp; Caregiver Hub</text>
+
+  <rect x="16" y="96" width="358" height="148" rx="22" fill="#18303E" stroke="#7CC6E8" stroke-width="1.5"/>
+  <text x="34" y="132" font-family="Manrope, sans-serif" font-size="18" font-weight="800" fill="#ECF4F8">Caregiver Dashboard Role</text>
+  <text x="34" y="156" font-family="Manrope, sans-serif" font-size="13" font-weight="600" fill="#B4CBD6">Viewing linked patient summaries &amp; alerts</text>
+  <rect x="296" y="118" width="58" height="32" rx="16" fill="#0E6E8C"/>
+  <circle cx="338" cy="134" r="12" fill="#FFFFFF"/>
+
+  <rect x="34" y="176" width="154" height="46" rx="12" fill="#132733" stroke="#284657"/>
+  <text x="64" y="204" font-family="Manrope, sans-serif" font-size="14" font-weight="700" fill="#B4CBD6">Patient View</text>
+  <rect x="198" y="176" width="158" height="46" rx="12" fill="#0E6E8C"/>
+  <text x="224" y="204" font-family="Manrope, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Caregiver View</text>
+
+  <rect x="16" y="268" width="358" height="240" rx="22" fill="#132733" stroke="#284657"/>
+  <text x="34" y="304" font-family="Manrope, sans-serif" font-size="20" font-weight="800" fill="#ECF4F8">Sunita Devi</text>
+  <text x="34" y="328" font-family="Manrope, sans-serif" font-size="14" font-weight="600" fill="#B4CBD6">Age 67 · Type-2 Diabetes, Hypertension</text>
+  <rect x="268" y="286" width="88" height="30" rx="15" fill="#123D24"/>
+  <text x="284" y="306" font-family="Manrope, sans-serif" font-size="13" font-weight="700" fill="#8CE6A8">✓ Normal</text>
+  <text x="34" y="370" font-family="Manrope, sans-serif" font-size="16" font-weight="700" fill="#ECF4F8">Last Reading: 138 mg/dL (Fasting)</text>
+  <text x="34" y="400" font-family="Manrope, sans-serif" font-size="16" font-weight="700" fill="#ECF4F8">Today's Doses: 3 / 4 taken</text>
+  <rect x="34" y="432" width="322" height="52" rx="14" fill="#0E6E8C"/>
+  <text x="78" y="464" font-family="Manrope, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">Acknowledge latest open alert</text>
+</svg>

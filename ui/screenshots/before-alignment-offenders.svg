@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="420" viewBox="0 0 820 420">
+  <rect width="820" height="420" fill="#F8FAFC"/>
+  <text x="24" y="36" font-family="sans-serif" font-size="20" font-weight="bold" fill="#0B4F6C">BEFORE FIXES — Worst Alignment &amp; Truncation Offenders (320x568 Phone)</text>
+  <!-- Offender 1: 5-Tab Bar squeezed at 320px -->
+  <rect x="24" y="56" width="320" height="145" rx="16" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1.5"/>
+  <text x="38" y="80" font-family="sans-serif" font-size="14" font-weight="bold" fill="#B42318">1. ProfileStickyTabBar @ 320px (Clipped labels)</text>
+  <rect x="36" y="94" width="296" height="44" rx="22" fill="#E8F1F5" stroke="#0E6E8C"/>
+  <rect x="40" y="98" width="56" height="36" rx="18" fill="#0E6E8C"/>
+  <text x="46" y="121" font-family="sans-serif" font-size="13" fill="#FFFFFF">Overvi…</text>
+  <text x="104" y="121" font-family="sans-serif" font-size="13" fill="#0B4F6C">Health</text>
+  <text x="158" y="121" font-family="sans-serif" font-size="13" fill="#0B4F6C">Medici…</text>
+  <text x="218" y="121" font-family="sans-serif" font-size="13" fill="#0B4F6C">Activi…</text>
+  <text x="276" y="121" font-family="sans-serif" font-size="13" fill="#0B4F6C">Privac…</text>
+  <text x="38" y="165" font-family="sans-serif" font-size="12" fill="#475569">Root cause: 5 weighted tabs in fixed Row with maxLines=1</text>
+
+  <!-- Offender 2: Action buttons &amp; Caregiver Call button truncation -->
+  <rect x="370" y="56" width="426" height="145" rx="16" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1.5"/>
+  <text x="386" y="80" font-family="sans-serif" font-size="14" font-weight="bold" fill="#B42318">2. Buttons maxLines=1 Truncation @ 320px</text>
+  <rect x="386" y="96" width="138" height="48" rx="14" fill="#0E6E8C"/>
+  <text x="404" y="125" font-family="sans-serif" font-size="14" fill="#FFFFFF">Edit profile</text>
+  <rect x="534" y="96" width="138" height="48" rx="14" fill="#FFFFFF" stroke="#0E6E8C" stroke-width="1.5"/>
+  <text x="548" y="125" font-family="sans-serif" font-size="14" fill="#0B4F6C">Share care…</text>
+  <text x="386" y="168" font-family="sans-serif" font-size="12" fill="#475569">Root cause: maxLines=1 on SehatSecondaryButton &amp; 2-col Row at 320px</text>
+
+  <!-- Offender 3: Typography below 18sp body / 14sp caption &amp; unit wrapping -->
+  <rect x="24" y="220" width="772" height="172" rx="16" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1.5"/>
+  <text x="40" y="248" font-family="sans-serif" font-size="14" font-weight="bold" fill="#B42318">3. Typography Scale &amp; Baseline / Unit Wrapping Offenders</text>
+  <text x="40" y="278" font-family="sans-serif" font-size="13" fill="#16262E">• Type.kt: bodyMedium = 16.sp (below 18.sp rule), labelSmall = 13.sp (below 14.sp rule)</text>
+  <text x="40" y="304" font-family="sans-serif" font-size="13" fill="#16262E">• Vital cards: "148" on line 1 and "mg/dL" wrapped to line 2 without non-breaking space or baseline alignment</text>
+  <text x="40" y="330" font-family="sans-serif" font-size="13" fill="#16262E">• AccountScreen avatar camera badge: 34x34dp touch target (below 48x48dp WCAG/Android minimum)</text>
+  <text x="40" y="356" font-family="sans-serif" font-size="13" fill="#16262E">• SehatTextField: conditional error text shifts form layout down by 22dp when validation error appears</text>
+</svg>
