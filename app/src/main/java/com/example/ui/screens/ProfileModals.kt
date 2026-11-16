@@ -992,7 +992,7 @@ fun PhotoCropAndZoomDialog(
             }
           } else {
             Text(
-              "No photo selected — default palette tint or initials will be shown.",
+              "No photo selected. Your initials or a soft palette tint will be shown.",
               style = MaterialTheme.typography.bodyMedium,
               color = c.inkSecondary,
               textAlign = TextAlign.Start,

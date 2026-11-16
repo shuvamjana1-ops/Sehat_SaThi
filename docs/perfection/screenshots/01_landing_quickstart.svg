@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844">
+  <rect width="390" height="844" fill="#E8F1F5"/>
+  <rect x="0" y="0" width="390" height="64" fill="#FFFFFF" stroke="#C9DCE5"/>
+  <rect x="16" y="16" width="32" height="32" rx="10" fill="#0E6E8C"/>
+  <text x="26" y="38" font-family="Manrope, sans-serif" font-size="16" font-weight="800" fill="#FFFFFF">SS</text>
+  <text x="58" y="38" font-family="Manrope, sans-serif" font-size="20" font-weight="800" fill="#0B4F6C">SehatSaathi</text>
+  <rect x="276" y="14" width="98" height="38" rx="12" fill="#0E6E8C"/>
+  <text x="292" y="38" font-family="Manrope, sans-serif" font-size="14" font-weight="700" fill="#FFFFFF">Get started</text>
+
+  <rect x="16" y="84" width="358" height="236" rx="22" fill="#FFFFFF" stroke="#C9DCE5"/>
+  <rect x="32" y="102" width="230" height="26" rx="13" fill="#E8F1F5"/>
+  <text x="44" y="119" font-family="Manrope, sans-serif" font-size="12" font-weight="700" fill="#0B4F6C">Track 2 · Healthcare Safety Companion</text>
+  <text x="32" y="154" font-family="Manrope, sans-serif" font-size="24" font-weight="800" fill="#0B4F6C">Understand your medicines.</text>
+  <text x="32" y="184" font-family="Manrope, sans-serif" font-size="24" font-weight="800" fill="#0B4F6C">Stay safe every day.</text>
+  <text x="32" y="216" font-family="Manrope, sans-serif" font-size="15" font-weight="500" fill="#16262E">Read prescriptions, check medicine safety,</text>
+  <text x="32" y="238" font-family="Manrope, sans-serif" font-size="15" font-weight="500" fill="#16262E">and alert family when a reading needs care.</text>
+  <rect x="32" y="254" width="154" height="48" rx="14" fill="#0E6E8C"/>
+  <text x="64" y="283" font-family="Manrope, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">Get started</text>
+  <rect x="198" y="254" width="154" height="48" rx="14" fill="#FFFFFF" stroke="#0E6E8C" stroke-width="2"/>
+  <text x="238" y="283" font-family="Manrope, sans-serif" font-size="16" font-weight="700" fill="#0B4F6C">Try demo</text>
+
+  <rect x="16" y="338" width="358" height="252" rx="22" fill="#FFFFFF" stroke="#C9DCE5"/>
+  <text x="32" y="370" font-family="Manrope, sans-serif" font-size="19" font-weight="800" fill="#0B4F6C">Quick Start for Judges (3 steps)</text>
+  <text x="32" y="402" font-family="Manrope, sans-serif" font-size="14" font-weight="600" fill="#16262E">1. Tap 'Try demo' to open Sunita Devi's</text>
+  <text x="32" y="422" font-family="Manrope, sans-serif" font-size="14" font-weight="600" fill="#16262E">   seeded profile with 0 setup or API keys.</text>
+  <text x="32" y="454" font-family="Manrope, sans-serif" font-size="14" font-weight="600" fill="#16262E">2. Test the deterministic safety loop: Log</text>
+  <text x="32" y="474" font-family="Manrope, sans-serif" font-size="14" font-weight="600" fill="#16262E">   54 or 250 mg/dL, or scan sample Rx.</text>
+  <text x="32" y="506" font-family="Manrope, sans-serif" font-size="14" font-weight="600" fill="#16262E">3. Open Family or Profile to switch roles,</text>
+  <text x="32" y="526" font-family="Manrope, sans-serif" font-size="14" font-weight="600" fill="#16262E">   print Doctor PDF, or create an account.</text>
+
+  <rect x="16" y="608" width="358" height="150" rx="22" fill="#F3F8FA" stroke="#C9DCE5"/>
+  <text x="32" y="640" font-family="Manrope, sans-serif" font-size="18" font-weight="800" fill="#0B4F6C">Judge 1-Tap Demo Scenarios</text>
+  <rect x="32" y="656" width="156" height="42" rx="12" fill="#0E6E8C"/>
+  <text x="46" y="682" font-family="Manrope, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">Low sugar at 2 AM</text>
+  <rect x="200" y="656" width="156" height="42" rx="12" fill="#0E6E8C"/>
+  <text x="218" y="682" font-family="Manrope, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF">High BP 185/125</text>
+
+  <rect x="0" y="784" width="390" height="60" fill="#FFFFFF" stroke="#C9DCE5"/>
+  <text x="20" y="818" font-family="Manrope, sans-serif" font-size="13" font-weight="700" fill="#16262E">SehatSaathi is a support tool, not a doctor. Call 112.</text>
+</svg>

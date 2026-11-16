@@ -249,7 +249,7 @@ fun EmergencyScreen(
         ) {
           Icon(Icons.Filled.Close, contentDescription = null, tint = PureWhite)
           Spacer(modifier = Modifier.width(8.dp))
-          Text("I am safe — Return to SehatSaathi", color = PureWhite)
+          Text("I am safe. Return to SehatSaathi", color = PureWhite)
         }
         Text(
           text = "SehatSaathi is a support tool, not a doctor. In an emergency call 112.",

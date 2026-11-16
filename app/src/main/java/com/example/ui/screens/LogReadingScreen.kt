@@ -400,19 +400,18 @@ fun LogReadingScreen(
             },
             onReview = {
               if (vitalType == VitalType.GLUCOSE) {
-                val g = glucoseInput.toIntOrNull()
-                if (g == null || g !in 20..900) {
-                  onShowToast("Please enter a valid sugar number between 20 and 900.")
+                val validation = com.example.domain.risk.RiskEngine.validateGlucoseInput(glucoseInput)
+                if (!validation.isValid || validation.glucoseMgDl == null) {
+                  onShowToast(validation.errorMessage ?: "Please enter a valid sugar number between 20 and 600 mg/dL.")
                 } else {
-                  onStageKeypadConfirmation(VitalType.GLUCOSE, g, null, null)
+                  onStageKeypadConfirmation(VitalType.GLUCOSE, validation.glucoseMgDl, null, null)
                 }
               } else {
-                val s = systolicInput.toIntOrNull()
-                val d = diastolicInput.toIntOrNull()
-                if (s == null || d == null || s !in 40..300 || d !in 25..200) {
-                  onShowToast("Please enter valid upper and lower blood pressure numbers.")
+                val validation = com.example.domain.risk.RiskEngine.validateBloodPressureInput(systolicInput, diastolicInput)
+                if (!validation.isValid || validation.systolic == null || validation.diastolic == null) {
+                  onShowToast(validation.errorMessage ?: "Please enter valid upper and lower blood pressure numbers.")
                 } else {
-                  onStageKeypadConfirmation(VitalType.BLOOD_PRESSURE, null, s, d)
+                  onStageKeypadConfirmation(VitalType.BLOOD_PRESSURE, null, validation.systolic, validation.diastolic)
                 }
               }
             },
@@ -559,7 +558,7 @@ private fun AnimatedVitalsGauge(
   val animatedFraction by
     animateFloatAsState(
       targetValue = targetFraction,
-      animationSpec = tween(durationMillis = if (reducedMotion) 0 else 500, easing = FastOutSlowInEasing),
+      animationSpec = tween(durationMillis = if (reducedMotion) 0 else 220, easing = FastOutSlowInEasing),
       label = "vitals_gauge",
     )
 
@@ -567,8 +566,8 @@ private fun AnimatedVitalsGauge(
   val activeColor =
     if (vitalType == VitalType.GLUCOSE) {
       when {
-        value < 70f || value > 300f -> c.statusUrgentFg
-        value > 250f -> c.statusCautionFg
+        value < 70f || value >= 300f -> c.statusUrgentFg
+        value >= 250f -> c.statusCautionFg
         else -> c.clinicalBlueAccent
       }
     } else {
@@ -676,11 +675,11 @@ private fun KeypadInputCard(
           horizontalAlignment = Alignment.CenterHorizontally,
           modifier = Modifier.padding(vertical = 16.dp, horizontal = 12.dp),
         ) {
-          Text("Blood sugar", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
+          Text("Blood sugar (20 to 600 mg/dL)", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
           Text(
-            text = if (glucoseInput.isBlank()) "--- mg/dL" else "$glucoseInput mg/dL",
+            text = if (glucoseInput.isBlank()) "e.g. 118 mg/dL" else "$glucoseInput mg/dL",
             style = MaterialTheme.typography.displayMedium.tabular(),
-            color = c.deepOcean,
+            color = if (glucoseInput.isBlank()) c.inkSecondary else c.deepOcean,
             modifier = Modifier.testTag("keypad_glucose_display"),
           )
         }
@@ -697,9 +696,9 @@ private fun KeypadInputCard(
           Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(14.dp)) {
             Text("Upper (SYS)", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
             Text(
-              text = systolicInput.ifBlank { "---" },
+              text = systolicInput.ifBlank { "e.g. 128" },
               style = MaterialTheme.typography.headlineLarge.tabular(),
-              color = c.deepOcean,
+              color = if (systolicInput.isBlank()) c.inkSecondary else c.deepOcean,
             )
           }
         }
@@ -713,9 +712,9 @@ private fun KeypadInputCard(
           Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(14.dp)) {
             Text("Lower (DIA)", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
             Text(
-              text = diastolicInput.ifBlank { "---" },
+              text = diastolicInput.ifBlank { "e.g. 82" },
               style = MaterialTheme.typography.headlineLarge.tabular(),
-              color = c.deepOcean,
+              color = if (diastolicInput.isBlank()) c.inkSecondary else c.deepOcean,
             )
           }
         }
@@ -962,7 +961,7 @@ private fun ConfirmationBeforeSaveCard(
     Spacer(modifier = Modifier.height(14.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
       SehatPrimaryButton(
-        text = "Confirm & Check Safety",
+        text = "Save reading",
         icon = Icons.Filled.CheckCircle,
         onClick = onConfirm,
         modifier = Modifier.weight(1f),
@@ -1027,6 +1026,30 @@ fun ReadingResultCard(
     }
     Spacer(modifier = Modifier.height(8.dp))
     Text(assessment.headline, style = MaterialTheme.typography.headlineMedium, color = c.deepOcean)
+
+    if (assessment.whyThisResultRule.isNotBlank()) {
+      Spacer(modifier = Modifier.height(8.dp))
+      Surface(
+        shape = CardShape,
+        color = c.surface,
+        border = BorderStroke(1.dp, c.hairlineBorder),
+        modifier = Modifier.fillMaxWidth().testTag("why_this_result_rule"),
+      ) {
+        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+          Text(
+            text = "Why this result",
+            style = MaterialTheme.typography.labelLarge,
+            color = c.deepOcean,
+          )
+          Text(
+            text = assessment.whyThisResultRule,
+            style = MaterialTheme.typography.bodyMedium.tabular(),
+            color = c.ink,
+          )
+        }
+      }
+    }
+
     Spacer(modifier = Modifier.height(10.dp))
 
     assessment.guidanceSteps.forEach { step ->

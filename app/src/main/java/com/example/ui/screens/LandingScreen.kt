@@ -1,20 +1,12 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.animateIntAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -30,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -41,13 +32,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Medication
-import androidx.compose.material.icons.filled.MonitorHeart
-import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -55,10 +42,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -66,21 +51,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
 import com.example.data.HealthStatusLevel
 import com.example.domain.demo.DemoScenario
 import com.example.ui.components.DemoPillBadge
@@ -93,17 +78,17 @@ import com.example.ui.components.SehatProgressMeter
 import com.example.ui.components.SehatSecondaryButton
 import com.example.ui.components.StatusChip
 import com.example.ui.components.rememberPrefersReducedMotion
-import com.example.ui.components.sehatColumnScroll3D
 import com.example.ui.theme.ButtonShape
 import com.example.ui.theme.CardShape
 import com.example.ui.theme.ClinicalBlue
+import com.example.ui.theme.DeepOcean
 import com.example.ui.theme.DeepOceanDark
 import com.example.ui.theme.GlassTokens
 import com.example.ui.theme.PureWhite
 import com.example.ui.theme.SehatPalette
 import com.example.ui.theme.rememberPrefersReducedTransparency
 import com.example.ui.theme.tabular
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -120,20 +105,11 @@ fun LandingScreen(
   val reducedTransparency = rememberPrefersReducedTransparency()
   val scrollState = rememberScrollState()
   val scope = rememberCoroutineScope()
-  val density = LocalDensity.current
 
   BoxWithConstraints(modifier = modifier.fillMaxSize().background(c.background)) {
     val isNarrowPhone = maxWidth < 380.dp
-    val viewportHeightPx = with(density) { maxHeight.toPx() }
-    val scrollProgress =
-      if (scrollState.maxValue > 0) {
-        (scrollState.value.toFloat() / scrollState.maxValue.toFloat()).coerceIn(0f, 1f)
-      } else {
-        0f
-      }
 
     Column(modifier = Modifier.fillMaxSize()) {
-      // Sticky Premium Header + Live Scroll Progress Indicator
       Surface(
         color =
           GlassTokens.chromeFill(
@@ -146,9 +122,9 @@ fun LandingScreen(
           Modifier
             .fillMaxWidth()
             .shadow(
-              elevation = if (scrollState.value > 12) 6.dp else 1.dp,
-              ambientColor = DeepOceanDark.copy(alpha = 0.16f),
-              spotColor = DeepOceanDark.copy(alpha = 0.2f),
+              elevation = if (scrollState.value > 12) 4.dp else 1.dp,
+              ambientColor = DeepOceanDark.copy(alpha = 0.12f),
+              spotColor = DeepOceanDark.copy(alpha = 0.16f),
             )
             .statusBarsPadding(),
       ) {
@@ -159,7 +135,7 @@ fun LandingScreen(
             modifier =
               Modifier
                 .fillMaxWidth()
-                .widthIn(max = 1200.dp)
+                .widthIn(max = 1120.dp)
                 .padding(horizontal = if (isNarrowPhone) 12.dp else 16.dp, vertical = 10.dp),
           ) {
             Row(
@@ -174,27 +150,7 @@ fun LandingScreen(
                   .padding(horizontal = 4.dp, vertical = 4.dp)
                   .testTag("landing_logo_home"),
             ) {
-              Box(
-                contentAlignment = Alignment.Center,
-                modifier =
-                  Modifier
-                    .size(36.dp)
-                    .shadow(
-                      elevation = 4.dp,
-                      shape = ButtonShape,
-                      ambientColor = DeepOceanDark.copy(alpha = 0.3f),
-                      spotColor = ClinicalBlue.copy(alpha = 0.35f),
-                    )
-                    .clip(ButtonShape)
-                    .background(Brush.linearGradient(listOf(DeepOceanDark, ClinicalBlue))),
-              ) {
-                Icon(
-                  imageVector = Icons.Filled.Favorite,
-                  contentDescription = null,
-                  tint = PureWhite,
-                  modifier = Modifier.size(18.dp),
-                )
-              }
+              SehatLogoMarkCanvas(modifier = Modifier.size(34.dp))
               Spacer(modifier = Modifier.width(8.dp))
               Text(
                 text = "SehatSaathi",
@@ -217,38 +173,28 @@ fun LandingScreen(
               )
             }
           }
-          // Slim luminous scroll progress bar
-          Box(modifier = Modifier.fillMaxWidth().height(2.5.dp).background(c.mist)) {
-            Box(
-              modifier =
-                Modifier
-                  .fillMaxWidth(scrollProgress.coerceAtLeast(0.04f))
-                  .height(2.5.dp)
-                  .background(Brush.horizontalGradient(listOf(c.deepOcean, c.clinicalBlueAccent))),
-            )
-          }
+          HorizontalDivider(color = c.hairlineBorder)
         }
       }
 
-      // Main scrollable body with 3D perspective depth & parallax
       Column(
         modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(scrollState),
       ) {
-        HeroStorySection(
-          scrollState = scrollState,
-          reducedMotion = reducedMotion,
+        HeroSection(
           onGetStarted = onGetStarted,
           onTryDemo = onTryDemo,
         )
 
-        // Scroll Storytelling Sections: Scan -> Track -> Alert -> Refill
+        HeartbeatDividerLine(color = c.clinicalBlueAccent.copy(alpha = 0.28f))
+
+        // Problem & 4-step walkthrough in plain, neighborly words
         Box(
           contentAlignment = Alignment.TopCenter,
           modifier =
             Modifier
               .fillMaxWidth()
               .background(c.background)
-              .padding(horizontal = 16.dp, vertical = 30.dp),
+              .padding(horizontal = 16.dp, vertical = 32.dp),
         ) {
           Column(
             verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -256,16 +202,16 @@ fun LandingScreen(
           ) {
             Column(
               verticalArrangement = Arrangement.spacedBy(8.dp),
-              modifier = Modifier.sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion, 4f),
+              modifier = Modifier.widthIn(max = 720.dp),
             ) {
               Text(
-                text = "One calm safety loop between doctor visits",
+                text = "What happens after the clinic visit",
                 style = MaterialTheme.typography.displayMedium,
                 color = c.deepOcean,
               )
               Text(
                 text =
-                  "Every step is written in clear everyday English, with large buttons and family peace of mind.",
+                  "Most families leave the clinic with a paper slip, a blood sugar meter, and three or four tablet strips. At 2 AM, when a reading looks wrong or a strip runs low, it is hard to remember which tablet is which or when to call for help. Here is how SehatSaathi helps day to day.",
                 style = MaterialTheme.typography.bodyLarge,
                 color = c.inkSecondary,
               )
@@ -276,93 +222,46 @@ fun LandingScreen(
               if (twoCols) {
                 Column(verticalArrangement = Arrangement.spacedBy(20.dp)) {
                   Row(horizontalArrangement = Arrangement.spacedBy(20.dp), modifier = Modifier.fillMaxWidth()) {
-                    ScanStoryCard(
-                      reducedMotion = reducedMotion,
-                      modifier =
-                        Modifier
-                          .weight(1f)
-                          .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
-                    )
-                    TrackStoryCard(
-                      reducedMotion = reducedMotion,
-                      modifier =
-                        Modifier
-                          .weight(1f)
-                          .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
-                    )
+                    ScanStoryCard(modifier = Modifier.weight(1f))
+                    TrackStoryCard(modifier = Modifier.weight(1f))
                   }
                   Row(horizontalArrangement = Arrangement.spacedBy(20.dp), modifier = Modifier.fillMaxWidth()) {
-                    AlertStoryCard(
-                      modifier =
-                        Modifier
-                          .weight(1f)
-                          .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
-                    )
-                    RefillStoryCard(
-                      reducedMotion = reducedMotion,
-                      modifier =
-                        Modifier
-                          .weight(1f)
-                          .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
-                    )
+                    AlertStoryCard(modifier = Modifier.weight(1f))
+                    RefillStoryCard(modifier = Modifier.weight(1f))
                   }
                 }
               } else {
-                Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-                  ScanStoryCard(
-                    reducedMotion = reducedMotion,
-                    modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
-                  )
-                  TrackStoryCard(
-                    reducedMotion = reducedMotion,
-                    modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
-                  )
-                  AlertStoryCard(
-                    modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
-                  )
-                  RefillStoryCard(
-                    reducedMotion = reducedMotion,
-                    modifier =
-                      Modifier
-                        .fillMaxWidth()
-                        .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
-                  )
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                  ScanStoryCard(modifier = Modifier.fillMaxWidth())
+                  TrackStoryCard(modifier = Modifier.fillMaxWidth())
+                  AlertStoryCard(modifier = Modifier.fillMaxWidth())
+                  RefillStoryCard(modifier = Modifier.fillMaxWidth())
                 }
               }
             }
           }
         }
 
-        // Safety Principles Strip
+        // Safety Rules & "What SehatSaathi cannot do"
         Box(
           contentAlignment = Alignment.TopCenter,
           modifier =
             Modifier
               .fillMaxWidth()
               .background(Brush.verticalGradient(listOf(c.mistSoft, c.mist)))
-              .padding(horizontal = 16.dp, vertical = 34.dp),
+              .padding(horizontal = 16.dp, vertical = 32.dp),
         ) {
           Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             modifier = Modifier.fillMaxWidth().widthIn(max = 1120.dp),
           ) {
             Row(
               verticalAlignment = Alignment.CenterVertically,
               horizontalArrangement = Arrangement.spacedBy(10.dp),
-              modifier = Modifier.sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion, 4f),
             ) {
-              Icon(Icons.Filled.Shield, contentDescription = null, tint = c.deepOcean, modifier = Modifier.size(28.dp))
+              Icon(Icons.Filled.Shield, contentDescription = null, tint = c.deepOcean, modifier = Modifier.size(26.dp))
               Text(
-                text = "Built around medical safety rules",
+                text = "Built around clear medical safety rules",
                 style = MaterialTheme.typography.headlineLarge,
                 color = c.deepOcean,
               )
@@ -374,41 +273,69 @@ fun LandingScreen(
             ) {
               SafetyPrincipleCard(
                 title = "Rules decide safety, not AI",
-                body = "AI only reads handwriting and explains terms. Clear clinical rules decide alerts.",
-                modifier =
-                  Modifier
-                    .widthIn(min = 260.dp, max = 360.dp)
-                    .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
+                body = "AI only reads handwriting and explains terms in plain words. Fixed clinical thresholds decide every alert.",
+                modifier = Modifier.widthIn(min = 260.dp, max = 360.dp),
               )
               SafetyPrincipleCard(
-                title = "You confirm every number",
-                body = "Medicine names, doses, and sugar readings are never saved until you check and confirm.",
-                modifier =
-                  Modifier
-                    .widthIn(min = 260.dp, max = 360.dp)
-                    .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
+                title = "You check every number first",
+                body = "Medicine names, doses, and blood sugar numbers are never saved until you review and confirm them.",
+                modifier = Modifier.widthIn(min = 260.dp, max = 360.dp),
               )
               SafetyPrincipleCard(
                 title = "Unknown is never marked safe",
-                body = "If a medicine is not in our sample list, we clearly ask you to check with your pharmacist.",
-                modifier =
-                  Modifier
-                    .widthIn(min = 260.dp, max = 360.dp)
-                    .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion),
+                body = "If a medicine is not in our 100-medicine reference list, we tell you openly to ask your pharmacist.",
+                modifier = Modifier.widthIn(min = 260.dp, max = 360.dp),
+              )
+            }
+
+            SehatCard(
+              containerColor = c.surface,
+              modifier = Modifier.fillMaxWidth().testTag("landing_what_it_cannot_do"),
+            ) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+              ) {
+                Icon(Icons.Filled.Info, contentDescription = null, tint = c.deepOcean, modifier = Modifier.size(22.dp))
+                Text(
+                  text = "What SehatSaathi cannot do",
+                  style = MaterialTheme.typography.titleLarge,
+                  color = c.deepOcean,
+                )
+              }
+              Spacer(modifier = Modifier.height(8.dp))
+              Text(
+                text = "• It is not a doctor and cannot diagnose any illness.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = c.ink,
+              )
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                text = "• It never tells you to start, stop, or change a medicine dose.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = c.ink,
+              )
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                text = "• It only checks duplicate salts, interactions, and generic options against its bundled 100-medicine reference list. Anything outside that list must be checked by your pharmacist.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = c.ink,
+              )
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                text = "• Reading a new prescription photo requires internet, though you can always type medicines and log readings offline.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = c.ink,
               )
             }
           }
         }
 
-        // FAQ Accordion
         FaqSection(
-          scrollState = scrollState,
-          viewportHeightPx = viewportHeightPx,
           reducedMotion = reducedMotion,
           modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 30.dp),
         )
 
-        // One-tap Judge Demo Scenarios
         Box(
           contentAlignment = Alignment.Center,
           modifier =
@@ -417,45 +344,77 @@ fun LandingScreen(
               .background(c.background)
               .padding(horizontal = 16.dp, vertical = 20.dp),
         ) {
-          DemoScenarioPanel(
-            activeScenario = null,
-            activeCaption = null,
-            onRunScenario = onLaunchDemoScenario,
-            onResetDemo = {},
-            showResetAndTourControls = false,
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .widthIn(max = 1120.dp)
-                .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion, 4f),
-          )
+          Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth().widthIn(max = 1120.dp),
+          ) {
+            SehatCard(
+              containerColor = c.surface,
+              modifier = Modifier.fillMaxWidth().testTag("landing_judge_quickstart"),
+            ) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth(),
+              ) {
+                Text(
+                  text = "Quick start for reviewers (3 steps)",
+                  style = MaterialTheme.typography.titleLarge,
+                  color = c.deepOcean,
+                )
+                DemoPillBadge(text = "Track 2 · Healthcare")
+              }
+              Spacer(modifier = Modifier.height(8.dp))
+              Text(
+                text = "1. Tap 'Try demo' (or any scenario button below) to open Sunita Devi's sample profile with no sign-up required.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = c.ink,
+              )
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                text = "2. Log a blood sugar reading (such as 54, 138, 250, or 300 mg/dL) or blood pressure (180/120 mmHg), or scan the sample prescription.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = c.ink,
+              )
+              Spacer(modifier = Modifier.height(4.dp))
+              Text(
+                text = "3. Open Family or Profile to switch between Patient and Caregiver views, print the 1-page Doctor Summary PDF, or sign out to create your own personal account.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = c.ink,
+              )
+            }
+
+            DemoScenarioPanel(
+              activeScenario = null,
+              activeCaption = null,
+              onRunScenario = onLaunchDemoScenario,
+              onResetDemo = {},
+              showResetAndTourControls = false,
+              modifier = Modifier.fillMaxWidth(),
+            )
+          }
         }
 
-        // Final Call to Action
         Box(
           contentAlignment = Alignment.Center,
           modifier =
             Modifier
               .fillMaxWidth()
               .background(Brush.verticalGradient(listOf(c.mistSoft, c.mist)))
-              .padding(horizontal = 16.dp, vertical = 34.dp),
+              .padding(horizontal = 16.dp, vertical = 32.dp),
         ) {
           SehatCard(
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .widthIn(max = 760.dp)
-                .sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion, 5f),
+            modifier = Modifier.fillMaxWidth().widthIn(max = 760.dp),
           ) {
             Text(
-              text = "See how SehatSaathi feels in 10 seconds",
+              text = "Try the sample profile or start your own",
               style = MaterialTheme.typography.headlineLarge,
               color = c.deepOcean,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
               text =
-                "Explore Sunita Devi's seeded demo account with 4 medicines, 14 days of readings, and refill tracking — no sign-up needed.",
+                "Open Sunita Devi's sample account with 4 medicines, 14 days of readings, and refill tracking. No sign-up is needed for the demo.",
               style = MaterialTheme.typography.bodyLarge,
               color = c.inkSecondary,
             )
@@ -492,161 +451,48 @@ fun LandingScreen(
   }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun HeroStorySection(
-  scrollState: ScrollState,
-  reducedMotion: Boolean,
+private fun HeroSection(
   onGetStarted: () -> Unit,
   onTryDemo: () -> Unit,
 ) {
-  val headlineWords = remember { listOf("Understand", "your", "medicines.", "Stay", "safe", "every", "day.") }
-  var visibleWords by remember { mutableIntStateOf(if (reducedMotion) headlineWords.size else 0) }
-  var ecgStarted by remember { mutableStateOf(reducedMotion) }
-
-  LaunchedEffect(reducedMotion) {
-    if (reducedMotion) {
-      visibleWords = headlineWords.size
-      ecgStarted = true
-    } else {
-      ecgStarted = true
-      for (i in 1..headlineWords.size) {
-        visibleWords = i
-        delay(80)
-      }
-    }
-  }
-
-  val ecgFraction by
-    animateFloatAsState(
-      targetValue = if (ecgStarted) 1f else 0f,
-      animationSpec = tween(durationMillis = if (reducedMotion) 0 else 700, easing = FastOutSlowInEasing),
-      label = "hero_ecg",
-    )
-
-  val infiniteTransition = rememberInfiniteTransition(label = "hero_shapes")
-  val floatOffset by
-    infiniteTransition.animateFloat(
-      initialValue = 0f,
-      targetValue = if (reducedMotion) 0f else 18f,
-      animationSpec = infiniteRepeatable(tween(4200), RepeatMode.Reverse),
-      label = "float_offset",
-    )
-
   val c = SehatPalette.current
-  val blobPrimary = c.clinicalBlueAccent
-  val blobSecondary = c.deepOcean
-
   Box(
     contentAlignment = Alignment.Center,
     modifier =
       Modifier
         .fillMaxWidth()
-        .background(Brush.verticalGradient(listOf(c.mist, c.mistSoft, c.background)))
-        .padding(horizontal = 16.dp, vertical = 30.dp),
+        .background(Brush.verticalGradient(listOf(c.background, c.mistSoft, c.mist.copy(alpha = 0.55f))))
+        .padding(horizontal = 16.dp, vertical = 28.dp),
   ) {
-    // Parallax translucent spheres + self-drawing ECG wave
-    Canvas(
-      modifier =
-        Modifier
-          .matchParentSize()
-          .graphicsLayer {
-            if (!reducedMotion) {
-              translationY = scrollState.value * 0.25f
-            }
-          },
-    ) {
-      drawCircle(
-        brush =
-          Brush.radialGradient(
-            colors = listOf(blobPrimary.copy(alpha = 0.14f), blobPrimary.copy(alpha = 0f)),
-            center = Offset(size.width * 0.85f, size.height * 0.24f + floatOffset),
-            radius = size.minDimension * 0.42f,
-          ),
-        radius = size.minDimension * 0.42f,
-        center = Offset(size.width * 0.85f, size.height * 0.24f + floatOffset),
-      )
-      drawCircle(
-        brush =
-          Brush.radialGradient(
-            colors = listOf(blobSecondary.copy(alpha = 0.10f), blobSecondary.copy(alpha = 0f)),
-            center = Offset(size.width * 0.14f, size.height * 0.74f - floatOffset),
-            radius = size.minDimension * 0.34f,
-          ),
-        radius = size.minDimension * 0.34f,
-        center = Offset(size.width * 0.14f, size.height * 0.74f - floatOffset),
-      )
-
-      val yBase = size.height * 0.88f
-      val w = size.width
-      val ecgPoints =
-        listOf(
-          0f to yBase,
-          w * 0.20f to yBase,
-          w * 0.24f to yBase - 14.dp.toPx(),
-          w * 0.27f to yBase + 10.dp.toPx(),
-          w * 0.31f to yBase - 42.dp.toPx(),
-          w * 0.35f to yBase + 26.dp.toPx(),
-          w * 0.39f to yBase - 10.dp.toPx(),
-          w * 0.43f to yBase,
-          w * 0.68f to yBase,
-          w * 0.72f to yBase - 30.dp.toPx(),
-          w * 0.76f to yBase + 18.dp.toPx(),
-          w * 0.80f to yBase,
-          w to yBase,
-        )
-      val path = Path()
-      val limit = ((ecgPoints.size - 1) * ecgFraction).toInt().coerceAtLeast(1)
-      ecgPoints.forEachIndexed { index, (x, y) ->
-        if (index <= limit) {
-          if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
-        }
-      }
-      drawPath(
-        path = path,
-        color = blobPrimary.copy(alpha = 0.24f),
-        style = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
-      )
-    }
-
     BoxWithConstraints(modifier = Modifier.fillMaxWidth().widthIn(max = 1120.dp)) {
       val splitHero = maxWidth >= 820.dp
       if (splitHero) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(32.dp),
-          modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+          modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
         ) {
           HeroCopyAndActions(
-            headlineWords = headlineWords,
-            visibleWords = visibleWords,
             onGetStarted = onGetStarted,
             onTryDemo = onTryDemo,
             modifier = Modifier.weight(1.15f),
           )
-          Hero3DShowcaseDeck(
-            scrollState = scrollState,
-            floatOffset = floatOffset,
-            reducedMotion = reducedMotion,
+          HeroSampleSnapshotCard(
             modifier = Modifier.weight(0.85f),
           )
         }
       } else {
         Column(
-          verticalArrangement = Arrangement.spacedBy(24.dp),
-          modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+          verticalArrangement = Arrangement.spacedBy(22.dp),
+          modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         ) {
           HeroCopyAndActions(
-            headlineWords = headlineWords,
-            visibleWords = visibleWords,
             onGetStarted = onGetStarted,
             onTryDemo = onTryDemo,
             modifier = Modifier.fillMaxWidth(),
           )
-          Hero3DShowcaseDeck(
-            scrollState = scrollState,
-            floatOffset = floatOffset,
-            reducedMotion = reducedMotion,
+          HeroSampleSnapshotCard(
             modifier = Modifier.fillMaxWidth(),
           )
         }
@@ -658,37 +504,26 @@ private fun HeroStorySection(
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun HeroCopyAndActions(
-  headlineWords: List<String>,
-  visibleWords: Int,
   onGetStarted: () -> Unit,
   onTryDemo: () -> Unit,
   modifier: Modifier = Modifier,
 ) {
   val c = SehatPalette.current
   Column(
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+    verticalArrangement = Arrangement.spacedBy(14.dp),
     modifier = modifier,
   ) {
-    DemoPillBadge(text = "Support companion for diabetes & blood pressure")
+    DemoPillBadge(text = "Daily support for diabetes and blood pressure")
 
-    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-      headlineWords.forEachIndexed { idx, word ->
-        AnimatedVisibility(
-          visible = idx < visibleWords,
-          enter = fadeIn(tween(220)),
-        ) {
-          Text(
-            text = word,
-            style = MaterialTheme.typography.displayLarge,
-            color = c.deepOcean,
-          )
-        }
-      }
-    }
+    Text(
+      text = "Understand your medicines. Stay safe every day.",
+      style = MaterialTheme.typography.displayLarge,
+      color = c.deepOcean,
+    )
 
     Text(
       text =
-        "SehatSaathi helps you read prescriptions, check medicine safety, log sugar and blood pressure, and alert your family when a reading needs care.",
+        "Take a photo of your prescription. We read it, you check it. Log your blood sugar or blood pressure, see what to do first if a reading is low or high, and keep track of how many tablets are left.",
       style = MaterialTheme.typography.bodyLarge,
       color = c.ink,
     )
@@ -714,210 +549,119 @@ private fun HeroCopyAndActions(
 }
 
 @Composable
-private fun Hero3DShowcaseDeck(
-  scrollState: ScrollState,
-  floatOffset: Float,
-  reducedMotion: Boolean,
+private fun HeroSampleSnapshotCard(
   modifier: Modifier = Modifier,
 ) {
   val c = SehatPalette.current
-  Box(
-    contentAlignment = Alignment.Center,
-    modifier = modifier.padding(vertical = 8.dp),
+  Surface(
+    shape = CardShape,
+    color = c.surface,
+    border = BorderStroke(1.dp, c.hairlineBorder),
+    shadowElevation = 3.dp,
+    modifier = modifier.fillMaxWidth(),
   ) {
-    // Back depth layer (3D stacked translucent card)
-    Surface(
-      shape = CardShape,
-      color = c.mist,
-      border = BorderStroke(1.dp, c.hairlineBorder),
-      modifier =
-        Modifier
-          .fillMaxWidth()
-          .height(210.dp)
-          .offset(x = 12.dp, y = 14.dp)
-          .graphicsLayer {
-            if (!reducedMotion) {
-              val scrollNorm = (scrollState.value / 700f).coerceIn(0f, 1f)
-              cameraDistance = 18f * density
-              rotationY = -10f + scrollNorm * 6f
-              rotationX = 5f - scrollNorm * 7f
-              translationY = (-floatOffset * 0.35f) - (scrollNorm * 16f)
-            }
-          }
-          .shadow(
-            elevation = 10.dp,
-            shape = CardShape,
-            ambientColor = DeepOceanDark.copy(alpha = 0.2f),
-            spotColor = DeepOceanDark.copy(alpha = 0.24f),
-          ),
-    ) {}
-
-    // Primary foreground 3D sculpted preview card
-    Surface(
-      shape = CardShape,
-      color = c.surface,
-      border =
-        BorderStroke(
-          1.2.dp,
-          Brush.linearGradient(listOf(c.surface, c.hairlineBorder)),
-        ),
-      modifier =
-        Modifier
-          .fillMaxWidth()
-          .graphicsLayer {
-            if (!reducedMotion) {
-              val scrollNorm = (scrollState.value / 700f).coerceIn(0f, 1f)
-              cameraDistance = 18f * density
-              rotationY = -5f + scrollNorm * 5f
-              rotationX = 3f - scrollNorm * 8f
-              translationY = (floatOffset * 0.22f) - (scrollNorm * 22f)
-              val scale = 1f - scrollNorm * 0.04f
-              scaleX = scale
-              scaleY = scale
-            }
-          }
-          .shadow(
-            elevation = 16.dp,
-            shape = CardShape,
-            ambientColor = DeepOceanDark.copy(alpha = 0.24f),
-            spotColor = ClinicalBlue.copy(alpha = 0.32f),
-          ),
+    Column(
+      verticalArrangement = Arrangement.spacedBy(12.dp),
+      modifier = Modifier.padding(18.dp),
     ) {
-      Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.padding(18.dp),
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth(),
+      ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+          PhoneHeartbeatLineIllustration(color = c.deepOcean, modifier = Modifier.size(34.dp))
+          Column {
+            Text("Sunita Devi · Daily view", style = MaterialTheme.typography.labelLarge, color = c.deepOcean)
+            Text("Sample patient (Demo)", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
+          }
+        }
+        StatusChip(level = HealthStatusLevel.NORMAL, label = "In range")
+      }
+
+      Surface(
+        shape = ButtonShape,
+        color = c.mistSoft,
+        border = BorderStroke(1.dp, c.hairlineBorder),
+        modifier = Modifier.fillMaxWidth(),
       ) {
         Row(
-          verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.SpaceBetween,
-          modifier = Modifier.fillMaxWidth(),
-        ) {
-          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Box(
-              contentAlignment = Alignment.Center,
-              modifier =
-                Modifier
-                  .size(32.dp)
-                  .clip(ButtonShape)
-                  .background(Brush.linearGradient(listOf(DeepOceanDark, ClinicalBlue))),
-            ) {
-              Icon(
-                imageVector = Icons.Filled.MonitorHeart,
-                contentDescription = null,
-                tint = PureWhite,
-                modifier = Modifier.size(18.dp),
-              )
-            }
-            Column {
-              Text("Sunita Devi · Daily safety view", style = MaterialTheme.typography.labelLarge, color = c.deepOcean)
-              Text("Seeded sample snapshot", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
-            }
-          }
-          StatusChip(level = HealthStatusLevel.NORMAL, label = "In range")
-        }
-
-        Surface(
-          shape = CardShape,
-          color = c.mistSoft,
-          border = BorderStroke(1.dp, c.hairlineBorder),
-          modifier = Modifier.fillMaxWidth(),
-        ) {
-          Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth().padding(14.dp),
-          ) {
-            Column {
-              Text("Blood sugar", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
-              Text(
-                text = "138 mg/dL",
-                style = MaterialTheme.typography.headlineMedium.tabular(),
-                color = c.deepOcean,
-              )
-            }
-            Column(horizontalAlignment = Alignment.End) {
-              Text("Blood pressure", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
-              Text(
-                text = "128/82 mmHg",
-                style = MaterialTheme.typography.headlineMedium.tabular(),
-                color = c.deepOcean,
-              )
-            }
-          }
-        }
-
-        Row(
           verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween,
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth().padding(14.dp),
         ) {
-          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = c.clinicalBlueAccent, modifier = Modifier.size(18.dp))
-            Text("3 of 4 medicines taken today", style = MaterialTheme.typography.labelMedium, color = c.ink)
+          Column {
+            Text("Blood sugar (Fasting)", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
+            Text(
+              text = "138 mg/dL",
+              style = MaterialTheme.typography.headlineMedium.tabular(),
+              color = c.deepOcean,
+            )
           }
-          DemoPillBadge(text = "Rule verified")
+          Column(horizontalAlignment = Alignment.End) {
+            Text("Blood pressure", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
+            Text(
+              text = "128/82 mmHg",
+              style = MaterialTheme.typography.headlineMedium.tabular(),
+              color = c.deepOcean,
+            )
+          }
         }
+      }
+
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth(),
+      ) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+          Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = c.clinicalBlueAccent, modifier = Modifier.size(18.dp))
+          Text("3 of 4 medicines taken today", style = MaterialTheme.typography.labelMedium, color = c.ink)
+        }
+        DemoPillBadge(text = "Demo")
       }
     }
   }
 }
 
 @Composable
-private fun ScanStoryCard(reducedMotion: Boolean, modifier: Modifier = Modifier) {
+private fun ScanStoryCard(modifier: Modifier = Modifier) {
   val c = SehatPalette.current
-  var showParsedList by remember { mutableStateOf(true) }
-  LaunchedEffect(reducedMotion) {
-    if (!reducedMotion) {
-      while (true) {
-        delay(2600)
-        showParsedList = !showParsedList
-      }
-    }
-  }
-
   SehatCard(modifier = modifier, containerColor = c.mistSoft) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-      Icon(Icons.Filled.DocumentScanner, contentDescription = null, tint = c.clinicalBlueAccent)
-      Text("1. Scan prescription", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      RxSheetLineIllustration(color = c.deepOcean, modifier = Modifier.size(36.dp))
+      Text("1. Read your prescription", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
     }
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-      text =
-        if (showParsedList) "Turns handwritten notes into a clear daily list for you to confirm:"
-        else "Start from a prescription photo:",
+      text = "Take a photo of your prescription. We read it, you check it before anything is saved.",
       style = MaterialTheme.typography.bodyMedium,
       color = c.inkSecondary,
     )
     Spacer(modifier = Modifier.height(12.dp))
     Surface(
-      shape = CardShape,
+      shape = ButtonShape,
       color = c.surface,
       border = BorderStroke(1.dp, c.hairlineBorder),
       modifier = Modifier.fillMaxWidth(),
     ) {
       Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (!showParsedList) {
-          Text("Dr. R. Mehta · Rx 12 Nov", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
-          Text("Tab Amaryl 1mg  1-0-0  a/c", style = MaterialTheme.typography.titleMedium, color = c.deepOcean)
-          Text("Tab Glycomet 500  1-0-1  p/c", style = MaterialTheme.typography.titleMedium, color = c.deepOcean)
-        } else {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth(),
-          ) {
-            Text("Amaryl 1 mg · Before breakfast", style = MaterialTheme.typography.bodyMedium, color = c.ink)
-            StatusChip(level = HealthStatusLevel.NORMAL, label = "Verified")
-          }
-          HorizontalDivider(color = c.hairlineBorder)
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth(),
-          ) {
-            Text("Glycomet 500 mg · After meals", style = MaterialTheme.typography.bodyMedium, color = c.ink)
-            StatusChip(level = HealthStatusLevel.INFO, label = "Generic match")
-          }
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween,
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          Text("Amaryl 1 mg · Before breakfast", style = MaterialTheme.typography.bodyMedium, color = c.ink)
+          StatusChip(level = HealthStatusLevel.NORMAL, label = "Verified")
+        }
+        HorizontalDivider(color = c.hairlineBorder)
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.SpaceBetween,
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          Text("Glycomet 500 mg · After meals", style = MaterialTheme.typography.bodyMedium, color = c.ink)
+          StatusChip(level = HealthStatusLevel.INFO, label = "Generic match")
         }
       }
     }
@@ -925,29 +669,22 @@ private fun ScanStoryCard(reducedMotion: Boolean, modifier: Modifier = Modifier)
 }
 
 @Composable
-private fun TrackStoryCard(reducedMotion: Boolean, modifier: Modifier = Modifier) {
+private fun TrackStoryCard(modifier: Modifier = Modifier) {
   val c = SehatPalette.current
-  val animatedSugar by
-    animateIntAsState(
-      targetValue = 138,
-      animationSpec = tween(durationMillis = if (reducedMotion) 0 else 700),
-      label = "story_sugar",
-    )
-
   SehatCard(modifier = modifier, containerColor = c.mistSoft) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-      Icon(Icons.Filled.MonitorHeart, contentDescription = null, tint = c.clinicalBlueAccent)
-      Text("2. Track sugar & BP", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      PhoneHeartbeatLineIllustration(color = c.deepOcean, modifier = Modifier.size(36.dp))
+      Text("2. Log sugar and blood pressure", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
     }
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-      text = "Log by photo, voice, or large keypad — then confirm before saving.",
+      text = "Type on the large keypad, speak a reading, or scan your meter. If your sugar drops below 70 mg/dL, we show you what to do first.",
       style = MaterialTheme.typography.bodyMedium,
       color = c.inkSecondary,
     )
     Spacer(modifier = Modifier.height(12.dp))
     Surface(
-      shape = CardShape,
+      shape = ButtonShape,
       color = c.surface,
       border = BorderStroke(1.dp, c.hairlineBorder),
       modifier = Modifier.fillMaxWidth(),
@@ -959,7 +696,7 @@ private fun TrackStoryCard(reducedMotion: Boolean, modifier: Modifier = Modifier
           modifier = Modifier.fillMaxWidth(),
         ) {
           Text(
-            text = "$animatedSugar mg/dL",
+            text = "138 mg/dL",
             style = MaterialTheme.typography.headlineLarge.tabular(),
             color = c.deepOcean,
           )
@@ -976,19 +713,19 @@ private fun TrackStoryCard(reducedMotion: Boolean, modifier: Modifier = Modifier
 private fun AlertStoryCard(modifier: Modifier = Modifier) {
   val c = SehatPalette.current
   SehatCard(modifier = modifier, containerColor = c.mistSoft) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-      Icon(Icons.Filled.NotificationsActive, contentDescription = null, tint = c.statusUrgentFg)
-      Text("3. Alert family quickly", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      PillOrganizerLineIllustration(color = c.deepOcean, modifier = Modifier.size(36.dp))
+      Text("3. Keep your family in the loop", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
     }
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-      text = "If a reading is dangerously low or high, clear first-aid steps and family alerts appear right away.",
+      text = "When a reading is dangerously low or high, clear first-aid steps and a ready-to-send family alert appear right away.",
       style = MaterialTheme.typography.bodyMedium,
       color = c.inkSecondary,
     )
     Spacer(modifier = Modifier.height(12.dp))
     Surface(
-      shape = CardShape,
+      shape = ButtonShape,
       color = c.surface,
       border = BorderStroke(1.dp, c.hairlineBorder),
       modifier = Modifier.fillMaxWidth(),
@@ -1009,29 +746,22 @@ private fun AlertStoryCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun RefillStoryCard(reducedMotion: Boolean, modifier: Modifier = Modifier) {
+private fun RefillStoryCard(modifier: Modifier = Modifier) {
   val c = SehatPalette.current
-  val daysLeft by
-    animateIntAsState(
-      targetValue = 2,
-      animationSpec = tween(durationMillis = if (reducedMotion) 0 else 700),
-      label = "story_refill_days",
-    )
-
   SehatCard(modifier = modifier, containerColor = c.mistSoft) {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-      Icon(Icons.Filled.Medication, contentDescription = null, tint = c.statusCautionFg)
-      Text("4. Never run out of tablets", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+      RefillCalendarLineIllustration(color = c.deepOcean, modifier = Modifier.size(36.dp))
+      Text("4. Know when tablets run low", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
     }
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-      text = "Stock updates only when you tap Taken, and warns you days before tablets finish.",
+      text = "2 tablets left is about 2 days. Stock updates when you mark a dose as taken, and warns you before a strip finishes.",
       style = MaterialTheme.typography.bodyMedium,
       color = c.inkSecondary,
     )
     Spacer(modifier = Modifier.height(12.dp))
     Surface(
-      shape = CardShape,
+      shape = ButtonShape,
       color = c.surface,
       border = BorderStroke(1.dp, c.hairlineBorder),
       modifier = Modifier.fillMaxWidth(),
@@ -1043,7 +773,7 @@ private fun RefillStoryCard(reducedMotion: Boolean, modifier: Modifier = Modifie
           modifier = Modifier.fillMaxWidth(),
         ) {
           Text("Amaryl 1 mg", style = MaterialTheme.typography.titleMedium, color = c.deepOcean)
-          StatusChip(level = HealthStatusLevel.URGENT, label = "$daysLeft days left")
+          StatusChip(level = HealthStatusLevel.URGENT, label = "2 days left")
         }
         SehatProgressMeter(progress = 0.20f, color = c.statusUrgentFg)
         Text("2 tablets left · Refill due", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
@@ -1071,8 +801,6 @@ private fun SafetyPrincipleCard(
 
 @Composable
 private fun FaqSection(
-  scrollState: ScrollState,
-  viewportHeightPx: Float,
   reducedMotion: Boolean,
   modifier: Modifier = Modifier,
 ) {
@@ -1080,13 +808,13 @@ private fun FaqSection(
   val items = remember {
     listOf(
       "Is SehatSaathi a doctor or diagnostic tool?" to
-        "No. SehatSaathi is a support tool that helps you read prescriptions and track readings. It never diagnoses or changes your medicine dose. Always ask your doctor or pharmacist.",
-      "Does it work without internet?" to
-        "Yes. Your medicine schedule, stock counts, and danger threshold rules work locally on your device. Prescription photo reading waits until internet is available, with manual entry always ready.",
+        "No. SehatSaathi helps you read prescriptions and track your daily numbers. It never diagnoses an illness or changes your medicine dose. Always ask your doctor or pharmacist.",
+      "What works when I have no internet?" to
+        "Your daily medicine schedule, tablet counts, and blood sugar or blood pressure safety checks all run on your phone without internet. Reading a new prescription photo needs internet, and you can type medicines in manually anytime.",
       "What is Demo mode?" to
-        "Demo mode loads a fictional patient named Sunita Devi with sample medicines and 14 days of readings so you can try the app safely without creating a real account.",
-      "Who can see my family alerts?" to
-        "Only family contacts you invite and who consent can receive alerts, and you can remove their access at any time.",
+        "Demo mode opens a fictional sample profile for Sunita Devi (age 66) with 4 medicines and 14 days of readings so you can test every screen before creating your own account.",
+      "Who can see my readings and family alerts?" to
+        "Your readings stay on your phone. Only family contacts you invite and mark as consented are shown in family alert previews, and you can remove them whenever you want.",
     )
   }
   var expandedIndex by remember { mutableIntStateOf(0) }
@@ -1096,13 +824,12 @@ private fun FaqSection(
       verticalArrangement = Arrangement.spacedBy(12.dp),
       modifier = Modifier.fillMaxWidth().widthIn(max = 840.dp),
     ) {
-      Text("Frequently asked questions", style = MaterialTheme.typography.headlineLarge, color = c.deepOcean)
+      Text("Common questions", style = MaterialTheme.typography.headlineLarge, color = c.deepOcean)
       items.forEachIndexed { idx, (question, answer) ->
         val isExpanded = expandedIndex == idx
         SehatCard(
           onClick = { expandedIndex = if (isExpanded) -1 else idx },
           containerColor = if (isExpanded) c.mistSoft else c.surface,
-          modifier = Modifier.sehatColumnScroll3D(scrollState, viewportHeightPx, reducedMotion, 4f),
         ) {
           Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -1123,8 +850,8 @@ private fun FaqSection(
           }
           AnimatedVisibility(
             visible = isExpanded,
-            enter = expandVertically(tween(220)) + fadeIn(tween(220)),
-            exit = shrinkVertically(tween(200)),
+            enter = expandVertically(tween(if (reducedMotion) 0 else 200)) + fadeIn(tween(if (reducedMotion) 0 else 200)),
+            exit = shrinkVertically(tween(if (reducedMotion) 0 else 180)),
           ) {
             Text(
               text = answer,
@@ -1136,5 +863,142 @@ private fun FaqSection(
         }
       }
     }
+  }
+}
+
+@Composable
+private fun SehatLogoMarkCanvas(modifier: Modifier = Modifier) {
+  Box(
+    contentAlignment = Alignment.Center,
+    modifier =
+      modifier
+        .clip(ButtonShape)
+        .background(DeepOcean),
+  ) {
+    Canvas(modifier = Modifier.size(20.dp)) {
+      val stroke = 2.dp.toPx()
+      val w = size.width
+      val h = size.height
+      val path = Path().apply {
+        moveTo(0f, h * 0.55f)
+        lineTo(w * 0.25f, h * 0.55f)
+        lineTo(w * 0.38f, h * 0.22f)
+        lineTo(w * 0.55f, h * 0.82f)
+        lineTo(w * 0.70f, h * 0.45f)
+        lineTo(w, h * 0.45f)
+      }
+      drawPath(
+        path = path,
+        color = PureWhite,
+        style = Stroke(width = stroke, cap = StrokeCap.Round, join = StrokeJoin.Round),
+      )
+    }
+  }
+}
+
+@Composable
+private fun HeartbeatDividerLine(color: Color, modifier: Modifier = Modifier) {
+  Canvas(modifier = modifier.fillMaxWidth().height(18.dp)) {
+    val y = size.height * 0.5f
+    val w = size.width
+    val path = Path().apply {
+      moveTo(0f, y)
+      lineTo(w * 0.44f, y)
+      lineTo(w * 0.46f, y - 6.dp.toPx())
+      lineTo(w * 0.48f, y + 7.dp.toPx())
+      lineTo(w * 0.50f, y - 8.dp.toPx())
+      lineTo(w * 0.52f, y + 4.dp.toPx())
+      lineTo(w * 0.54f, y)
+      lineTo(w, y)
+    }
+    drawPath(
+      path = path,
+      color = color,
+      style = Stroke(width = 1.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round),
+    )
+  }
+}
+
+@Composable
+private fun RxSheetLineIllustration(color: Color, modifier: Modifier = Modifier) {
+  Canvas(modifier = modifier) {
+    val s = 1.75.dp.toPx()
+    val w = size.width
+    val h = size.height
+    drawRoundRect(
+      color = color,
+      topLeft = Offset(w * 0.16f, h * 0.10f),
+      size = Size(w * 0.68f, h * 0.80f),
+      cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+      style = Stroke(width = s),
+    )
+    drawLine(color, Offset(w * 0.28f, h * 0.30f), Offset(w * 0.52f, h * 0.30f), strokeWidth = s, cap = StrokeCap.Round)
+    drawLine(color, Offset(w * 0.28f, h * 0.48f), Offset(w * 0.72f, h * 0.48f), strokeWidth = s, cap = StrokeCap.Round)
+    drawLine(color, Offset(w * 0.28f, h * 0.64f), Offset(w * 0.64f, h * 0.64f), strokeWidth = s, cap = StrokeCap.Round)
+  }
+}
+
+@Composable
+private fun PhoneHeartbeatLineIllustration(color: Color, modifier: Modifier = Modifier) {
+  Canvas(modifier = modifier) {
+    val s = 1.75.dp.toPx()
+    val w = size.width
+    val h = size.height
+    drawRoundRect(
+      color = color,
+      topLeft = Offset(w * 0.22f, h * 0.08f),
+      size = Size(w * 0.56f, h * 0.84f),
+      cornerRadius = CornerRadius(5.dp.toPx(), 5.dp.toPx()),
+      style = Stroke(width = s),
+    )
+    val pulse = Path().apply {
+      moveTo(w * 0.30f, h * 0.50f)
+      lineTo(w * 0.42f, h * 0.50f)
+      lineTo(w * 0.47f, h * 0.36f)
+      lineTo(w * 0.54f, h * 0.64f)
+      lineTo(w * 0.60f, h * 0.50f)
+      lineTo(w * 0.70f, h * 0.50f)
+    }
+    drawPath(pulse, color = ClinicalBlue, style = Stroke(width = s, cap = StrokeCap.Round, join = StrokeJoin.Round))
+  }
+}
+
+@Composable
+private fun PillOrganizerLineIllustration(color: Color, modifier: Modifier = Modifier) {
+  Canvas(modifier = modifier) {
+    val s = 1.75.dp.toPx()
+    val w = size.width
+    val h = size.height
+    drawRoundRect(
+      color = color,
+      topLeft = Offset(w * 0.10f, h * 0.22f),
+      size = Size(w * 0.80f, h * 0.56f),
+      cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+      style = Stroke(width = s),
+    )
+    drawLine(color, Offset(w * 0.37f, h * 0.22f), Offset(w * 0.37f, h * 0.78f), strokeWidth = s)
+    drawLine(color, Offset(w * 0.63f, h * 0.22f), Offset(w * 0.63f, h * 0.78f), strokeWidth = s)
+    drawCircle(color = ClinicalBlue, radius = w * 0.06f, center = Offset(w * 0.24f, h * 0.50f))
+    drawCircle(color = ClinicalBlue, radius = w * 0.06f, center = Offset(w * 0.50f, h * 0.50f))
+  }
+}
+
+@Composable
+private fun RefillCalendarLineIllustration(color: Color, modifier: Modifier = Modifier) {
+  Canvas(modifier = modifier) {
+    val s = 1.75.dp.toPx()
+    val w = size.width
+    val h = size.height
+    drawRoundRect(
+      color = color,
+      topLeft = Offset(w * 0.14f, h * 0.18f),
+      size = Size(w * 0.72f, h * 0.68f),
+      cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx()),
+      style = Stroke(width = s),
+    )
+    drawLine(color, Offset(w * 0.14f, h * 0.36f), Offset(w * 0.86f, h * 0.36f), strokeWidth = s)
+    drawLine(color, Offset(w * 0.32f, h * 0.10f), Offset(w * 0.32f, h * 0.24f), strokeWidth = s, cap = StrokeCap.Round)
+    drawLine(color, Offset(w * 0.68f, h * 0.10f), Offset(w * 0.68f, h * 0.24f), strokeWidth = s, cap = StrokeCap.Round)
+    drawCircle(color = ClinicalBlue, radius = w * 0.07f, center = Offset(w * 0.64f, h * 0.62f))
   }
 }

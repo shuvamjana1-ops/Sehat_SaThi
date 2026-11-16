@@ -61,7 +61,7 @@ object DoctorSummaryAndDataExporter {
         .filter { it.refillStatus != RefillStatus.OK }
         .map { med ->
           val daysInfo =
-            med.daysLeftOrNull?.let { "$it days left" } ?: "stock unknown — ask pharmacist"
+            med.daysLeftOrNull?.let { "$it days left" } ?: "stock unknown, ask pharmacist"
           "${med.brandName} (${med.refillStatus.label}: $daysInfo)"
         } + RefillEngine.prescriptionEndingNotices(state.medicines)
 
@@ -238,7 +238,7 @@ object DoctorSummaryAndDataExporter {
       }
     }
 
-    canvas.drawText("SehatSaathi — Doctor Visit Summary", left, y, titlePaint)
+    canvas.drawText("SehatSaathi - Doctor Visit Summary", left, y, titlePaint)
     y += 16f
     canvas.drawText("Generated: ${summary.generatedAt} | Support tool, not a doctor.", left, y, mutedPaint)
     y += 10f
@@ -275,7 +275,7 @@ object DoctorSummaryAndDataExporter {
     state.medicines.take(8).forEach { med ->
       val stockText = med.daysLeftOrNull?.let { "${med.stockCount} ${med.unit} (~$it days)" } ?: "Stock unknown"
       drawWrapped(
-        "• ${med.brandName} [${med.genericName} ${med.strength}] — ${med.frequency}, ${med.foodTiming} | $stockText",
+        "• ${med.brandName} [${med.genericName} ${med.strength}] (${med.frequency}, ${med.foodTiming}) | $stockText",
         bodyPaint,
       )
     }

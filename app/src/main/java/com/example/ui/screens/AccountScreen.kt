@@ -899,7 +899,7 @@ private fun ProfileHeaderHeroCard(
           Text(
             text =
               patient.bio.ifBlank {
-                "No bio yet — tap to add a short note about your routine."
+                "No bio yet. Tap to add a short note about your routine."
               },
             style = MaterialTheme.typography.bodyMedium,
             color = if (patient.bio.isBlank()) c.inkSecondary else c.ink,
@@ -2081,7 +2081,7 @@ private fun ProfileMedicinesTabContent(
                 Text(
                   text =
                     med.daysLeftOrNull?.let { "${med.stockCount} ${med.unit} (~$it days left)" }
-                      ?: "Stock not set — ask pharmacist",
+                      ?: "Stock not set. Ask your pharmacist",
                   style = MaterialTheme.typography.labelMedium.tabular(),
                   color = c.ink,
                 )

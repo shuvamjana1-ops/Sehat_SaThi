@@ -1119,10 +1119,10 @@ private fun OfflineStatusBar(
           text =
             when {
               !isOnline && queueCount > 0 ->
-                "Offline ($queueCount queued) · Rules & keypad still work"
+                "No internet. Your readings are saved on this phone ($queueCount scan queued)."
               !isOnline ->
-                "Offline · Safety rules, schedule & Call Family work without net"
-              else -> "$queueCount queued offline scan(s) ready"
+                "No internet. Your readings are saved on this phone."
+              else -> "$queueCount saved scan(s) ready to sync"
             },
           style = MaterialTheme.typography.labelMedium,
           color = if (!isOnline) c.statusCautionFg else c.deepOcean,

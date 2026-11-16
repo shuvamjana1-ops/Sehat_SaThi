@@ -562,7 +562,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
             activeDemoScenario = scenario,
             activeDemoScenarioCaption = scenario.caption,
             pendingDemoNavigationRoute = AppRoutes.LOG_READING,
-            toastMessage = "Demo scenario: BP 185/125 logged — showing crisis guidance.",
+            toastMessage = "Demo scenario: BP 185/125 logged. Showing crisis guidance.",
           )
         }
         startDemoEscalationTimer(assessment.whatsappSummarySnippet)
@@ -604,7 +604,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
             activeDemoScenario = scenario,
             activeDemoScenarioCaption = scenario.caption,
             pendingDemoNavigationRoute = AppRoutes.MEDICINES,
-            toastMessage = "Demo scenario: Glycomet 500 mg has 3 days left — refill alert ready.",
+            toastMessage = "Demo scenario: Glycomet 500 mg has 3 days left. Refill alert ready.",
           )
         }
       }
@@ -817,8 +817,8 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
               bitmap = bitmap,
             ),
           aiParseError =
-            "Offline: meter photo queued. Use the large keypad below right now, or sync when back online.",
-          toastMessage = "No internet — meter photo queued for sync.",
+            "No internet right now. Your meter photo is saved to sync later, or you can type the numbers on the keypad below.",
+          toastMessage = "No internet. Meter photo saved to sync later.",
         )
       }
       return
@@ -860,8 +860,8 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
                 transcript = clean,
               ),
             aiParseError =
-              "Offline and phrase was unclear. Queued for sync — please enter on the large keypad below.",
-            toastMessage = "Offline voice phrase queued for sync.",
+              "No internet and the spoken phrase was unclear. It is saved to sync later, or you can type the numbers on the keypad below.",
+            toastMessage = "Offline voice phrase saved to sync later.",
           )
         }
       } else {
@@ -1228,9 +1228,9 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
               qualityIssue = null,
               isScanning = false,
               scanError =
-                "Offline: prescription photo queued for when internet returns. Tap 'Enter medicines manually' below to continue now.",
+                "No internet right now. Your prescription photo is saved for when internet returns, or tap 'Enter medicines manually' below.",
             ),
-          toastMessage = "No internet — prescription photo queued for sync.",
+          toastMessage = "No internet. Prescription photo saved to sync later.",
         )
       }
       return
@@ -1258,7 +1258,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
                 state.rxScanner.copy(
                   isScanning = false,
                   scanError =
-                    "We could not read this image. Please retake the photo or enter the details yourself.",
+                    "We could not read that photo. Try again in better light, or type the medicines in.",
                 ),
             )
           }
@@ -1360,7 +1360,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
             doctorName = "Dr. R. Mehta (Demo Rx)",
             rxDate = "15 Nov 2026",
             extractedMedicines = demoExtracted,
-            warnings = listOf("Sample result: One medicine line has low confidence — please verify before saving."),
+            warnings = listOf("Sample result: One medicine line has low confidence. Please verify before saving."),
           ),
       )
     }
@@ -1624,7 +1624,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
         medicines = state.medicines.map { if (it.id == medicineId) updated else it },
         refillHistory = listOf(history) + state.refillHistory,
         toastMessage =
-          if (markUnknown) "${updated.brandName} stock marked unknown — ask your pharmacist."
+          if (markUnknown) "${updated.brandName} stock marked unknown. Ask your pharmacist."
           else "Updated ${updated.brandName} stock to ${updated.stockCount} ${updated.unit}.",
       )
     }
@@ -2000,6 +2000,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
   private fun resetDemoDataInternal() {
     escalationJob?.cancel()
     lastAlertRecord = null
+    runCatching { DoctorSummaryAndDataExporter.clearExportCache(getApplication()) }
     _uiState.update { state ->
       val report =
         state.drugDataset?.let { ds ->

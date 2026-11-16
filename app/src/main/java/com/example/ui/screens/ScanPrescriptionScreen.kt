@@ -249,7 +249,7 @@ fun ScanPrescriptionScreen(
         if (rx.isScanning) {
           item {
             SehatInlineLoadingBanner(
-              title = "Reading prescription...",
+              title = "Reading your prescription...",
               subtitle = "Extracting medicine names, strengths, and timings. You will review every line.",
             )
           }

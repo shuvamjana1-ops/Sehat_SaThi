@@ -126,9 +126,9 @@ fun createSamplePrescriptionBitmap(
 
   canvas.drawText("Patient: $patientName (Age $patientAge)", 56f, 224f, rxPaint)
   canvas.drawText("Rx:", 56f, 290f, headerPaint)
-  canvas.drawText("1. Tab Brufen 400 mg   —   BD (After food) x 5d", 68f, 360f, rxPaint)
-  canvas.drawText("2. Tab Telma 40 mg     —   OD (Morning) x 30d", 68f, 440f, rxPaint)
-  canvas.drawText("3. Cap Pan-D / Dolo 650? — SOS (After food)", 68f, 520f, rxPaint)
+  canvas.drawText("1. Tab Brufen 400 mg   .   BD (After food) x 5d", 68f, 360f, rxPaint)
+  canvas.drawText("2. Tab Telma 40 mg     .   OD (Morning) x 30d", 68f, 440f, rxPaint)
+  canvas.drawText("3. Cap Pan-D / Dolo 650? . SOS (After food)", 68f, 520f, rxPaint)
 
   canvas.drawLine(56f, 640f, width - 56f, 640f, borderPaint)
   canvas.drawText("Fictional sample slip for Demo mode only.", 56f, 700f, subPaint)

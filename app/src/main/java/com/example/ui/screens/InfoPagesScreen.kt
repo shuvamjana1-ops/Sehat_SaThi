@@ -234,7 +234,7 @@ fun InfoPagesScreen(
             SehatCard(containerColor = c.surface) {
               Text("How SehatSaathi keeps checks safe", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
               Spacer(modifier = Modifier.height(8.dp))
-              InfoBullet("Clear rules decide danger levels, duplicate medicines, interactions, and refill alerts — never unverified AI guesses.")
+              InfoBullet("Clear rules decide danger levels, duplicate medicines, interactions, and refill alerts, never unverified AI guesses.")
               InfoBullet("Every medicine name, dose, reading, and tablet count is shown to you to confirm before saving.")
               InfoBullet("If an item is missing from our reference list or unclear in a photo, we ask you to check with your doctor or pharmacist.")
               InfoBullet("Simulated features such as Demo WhatsApp alerts and Demo timers are clearly marked with a Demo badge.")
@@ -268,7 +268,7 @@ fun InfoPagesScreen(
               Text("About SehatSaathi", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
               Spacer(modifier = Modifier.height(8.dp))
               Text(
-                "SehatSaathi helps people managing diabetes or blood pressure — and the family members supporting them — read prescriptions clearly, follow daily schedules, watch refill stock, and spot concerning readings early.",
+                "SehatSaathi helps people managing diabetes or blood pressure, and the family members supporting them, read prescriptions clearly, follow daily schedules, watch refill stock, and spot concerning readings early.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = c.ink,
               )

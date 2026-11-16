@@ -135,7 +135,7 @@ class VitalsAiParser {
   }
 
   suspend fun parseVoiceTranscript(transcript: String): ParsedVitalExtraction? {
-    val sanitized = transcript.trim().take(200)
+    val sanitized = sanitizeUntrustedTranscript(transcript)
     if (sanitized.isEmpty()) return null
 
     // Try Gemini structured extraction first, with deterministic regex fallback if offline/error
@@ -201,7 +201,7 @@ class VitalsAiParser {
     return when (typeStr) {
       "glucose" -> {
         val glucose = if (obj.isNull("glucoseMgDl")) null else obj.optInt("glucoseMgDl")
-        val validGlucose = glucose?.takeIf { it in 20..900 }
+        val validGlucose = glucose?.takeIf { it in 20..600 }
         ParsedVitalExtraction(
           vitalType = VitalType.GLUCOSE,
           glucoseMgDl = validGlucose,
@@ -213,13 +213,13 @@ class VitalsAiParser {
         val sys = if (obj.isNull("systolic")) null else obj.optInt("systolic")
         val dia = if (obj.isNull("diastolic")) null else obj.optInt("diastolic")
         val validSys = sys?.takeIf { it in 40..300 }
-        val validDia = dia?.takeIf { it in 25..200 }
+        val validDia = dia?.takeIf { it in 20..200 }
+        val validPair = validSys != null && validDia != null && validSys > validDia
         ParsedVitalExtraction(
           vitalType = VitalType.BLOOD_PRESSURE,
-          systolic = validSys,
-          diastolic = validDia,
-          confidence =
-            if (validSys == null || validDia == null) minOf(confidence, 0.4) else confidence,
+          systolic = if (validPair) validSys else null,
+          diastolic = if (validPair) validDia else null,
+          confidence = if (!validPair) minOf(confidence, 0.4) else confidence,
           unit = unit.ifBlank { "mmHg" },
         )
       }
@@ -229,18 +229,36 @@ class VitalsAiParser {
 
   companion object {
     /**
+     * Strips HTML/script tags and prompt-injection instructions so untrusted speech or OCR text is
+     * treated strictly as data and never overrides clinical safety rules.
+     */
+    fun sanitizeUntrustedTranscript(input: String): String {
+      return input
+        .replace(Regex("<[^>]*>"), " ")
+        .replace(
+          Regex(
+            "(?i)(ignore\\s+(all\\s+)?(previous|prior)\\s+instructions|system\\s+prompt|you\\s+are\\s+now|mark\\s+(everything\\s+|it\\s+)?safe|override\\s+safety|prescribe\\s+insulin)",
+          ),
+          " ",
+        )
+        .replace(Regex("\\s+"), " ")
+        .trim()
+        .take(240)
+    }
+
+    /**
      * Deterministic offline parser fallback for spoken/typed phrases like:
      * "sugar 240", "glucose is 62", "BP 150 by 95", "140/90", "182"
      */
     fun fallbackParseSpokenText(input: String): ParsedVitalExtraction? {
-      val clean = input.trim().lowercase()
+      val clean = sanitizeUntrustedTranscript(input).lowercase()
       if (clean.isEmpty()) return null
 
       val bpRegex = Regex("""(\d{2,3})\s*(?:/|by|over)\s*(\d{2,3})""")
       bpRegex.find(clean)?.let { match ->
         val sys = match.groupValues[1].toIntOrNull()
         val dia = match.groupValues[2].toIntOrNull()
-        if (sys != null && dia != null && sys in 40..300 && dia in 25..200) {
+        if (sys != null && dia != null && sys in 40..300 && dia in 20..200 && sys > dia) {
           return ParsedVitalExtraction(
             vitalType = VitalType.BLOOD_PRESSURE,
             systolic = sys,
@@ -255,7 +273,7 @@ class VitalsAiParser {
       val singleRegex = Regex("""\b(\d{2,3})\b""")
       singleRegex.find(clean)?.let { match ->
         val sugar = match.groupValues[1].toIntOrNull()
-        if (sugar != null && sugar in 20..900) {
+        if (sugar != null && sugar in 20..600) {
           return ParsedVitalExtraction(
             vitalType = VitalType.GLUCOSE,
             glucoseMgDl = sugar,

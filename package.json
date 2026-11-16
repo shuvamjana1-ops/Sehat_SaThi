@@ -1,0 +1,10 @@
+{
+  "name": "sehatsaathi-qa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deterministic clinical safety evaluation and QA runner for SehatSaathi (Track 2: Healthcare)",
+  "scripts": {
+    "evaluate": "node scripts/evaluate.mjs",
+    "qa": "node scripts/qa.mjs"
+  }
+}

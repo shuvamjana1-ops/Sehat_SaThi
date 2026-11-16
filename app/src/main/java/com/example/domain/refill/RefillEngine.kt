@@ -8,7 +8,7 @@ import com.example.data.SeededMedicine
 object RefillEngine {
 
   const val UNKNOWN_STOCK_MESSAGE =
-    "Stock not in our records. Never assume plentiful — please check your strip and ask your pharmacist."
+    "Stock not in our records. Never assume plentiful. Please check your strip and ask your pharmacist."
 
   fun computeDaysLeft(
     stockCount: Int,

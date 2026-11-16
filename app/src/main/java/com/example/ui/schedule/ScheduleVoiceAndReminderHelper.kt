@@ -121,7 +121,7 @@ object ScheduleNotificationHelper {
       NotificationCompat.Builder(context, CHANNEL_ID)
         .setSmallIcon(R.mipmap.ic_launcher)
         .setContentTitle("Medicine reminder: ${dose.slot.title}")
-        .setContentText("${dose.medicineLabel} — ${dose.instruction}")
+        .setContentText("${dose.medicineLabel}: ${dose.instruction}")
         .setPriority(NotificationCompat.PRIORITY_HIGH)
         .setAutoCancel(true)
         .setContentIntent(pendingIntent)

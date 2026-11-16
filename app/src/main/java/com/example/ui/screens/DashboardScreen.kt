@@ -267,19 +267,6 @@ fun DashboardScreen(
                       ),
                     ),
               ) {
-                Canvas(modifier = Modifier.matchParentSize()) {
-                  drawCircle(
-                    color = PureWhite.copy(alpha = 0.08f),
-                    radius = size.minDimension * 0.65f,
-                    center = Offset(size.width * 0.92f, size.height * 0.15f),
-                  )
-                  drawCircle(
-                    color = PureWhite.copy(alpha = 0.05f),
-                    radius = size.minDimension * 0.45f,
-                    center = Offset(size.width * 0.72f, size.height * 0.95f),
-                  )
-                }
-
                 Column(
                   verticalArrangement = Arrangement.spacedBy(12.dp),
                   modifier = Modifier.fillMaxWidth().padding(20.dp),
@@ -289,9 +276,21 @@ fun DashboardScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth(),
                   ) {
+                    val greetingText = remember(uiState.patient.name) {
+                      val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+                      val prefix =
+                        when (hour) {
+                          in 5..11 -> "Good morning"
+                          in 12..16 -> "Good afternoon"
+                          in 17..21 -> "Good evening"
+                          else -> "Hello"
+                        }
+                      val cleanName = uiState.patient.name.trim()
+                      if (cleanName.isNotEmpty()) "$prefix, $cleanName" else prefix
+                    }
                     Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
                       Text(
-                        text = "Hello, ${uiState.patient.name}",
+                        text = greetingText,
                         style = MaterialTheme.typography.displayMedium,
                         color = PureWhite,
                       )
@@ -555,7 +554,7 @@ private fun StaggeredTile(
   } else {
     AnimatedVisibility(
       visible = visible,
-      enter = fadeIn(tween(260)) + slideInVertically(tween(260)) { it / 10 },
+      enter = fadeIn(tween(200)) + slideInVertically(tween(200)) { it / 12 },
       modifier = modifier,
     ) {
       content()
@@ -672,7 +671,7 @@ private fun TodayDosesTile(
               Spacer(modifier = Modifier.width(4.dp))
             }
             Text(
-              text = if (dose.taken) "Taken" else "Mark taken",
+              text = if (dose.taken) "Taken" else "Mark as taken",
               style = MaterialTheme.typography.labelMedium,
               color = if (dose.taken) c.statusNormalFg else c.deepOcean,
             )
@@ -809,7 +808,7 @@ private fun RefillsTile(
               Text(
                 text =
                   med.daysLeftOrNull?.let { "${med.stockCount} ${med.unit} left · $it days" }
-                    ?: "Stock unknown — ask pharmacist",
+                    ?: "Stock unknown. Ask your pharmacist",
                 style = MaterialTheme.typography.labelMedium.tabular(),
                 color = c.inkSecondary,
               )
