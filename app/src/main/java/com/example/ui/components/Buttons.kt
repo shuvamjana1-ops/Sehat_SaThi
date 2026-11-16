@@ -8,10 +8,8 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -32,6 +30,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.style.LineBreak
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -40,6 +40,7 @@ import com.example.ui.theme.DeepOcean
 import com.example.ui.theme.PureWhite
 import com.example.ui.theme.SehatPalette
 import com.example.ui.theme.StatusUrgentFg
+import com.example.ui.theme.withNonBreakingUnits
 
 @Composable
 fun SehatPrimaryButton(
@@ -79,7 +80,7 @@ fun SehatPrimaryButton(
     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
     modifier =
       modifier
-        .defaultMinSize(minHeight = minHeight)
+        .defaultMinSize(minWidth = 48.dp, minHeight = minHeight)
         .scale(scale)
         .then(
           if (enabled) {
@@ -97,7 +98,7 @@ fun SehatPrimaryButton(
   ) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.Center,
+      horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
     ) {
       if (isLoading) {
         CircularProgressIndicator(
@@ -105,16 +106,15 @@ fun SehatPrimaryButton(
           color = PureWhite,
           strokeWidth = 2.5.dp,
         )
-        Spacer(modifier = Modifier.width(10.dp))
       } else if (icon != null) {
         Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
-        Spacer(modifier = Modifier.width(8.dp))
       }
       Text(
-        text = text,
-        style = MaterialTheme.typography.labelLarge,
+        text = text.withNonBreakingUnits(),
+        style = MaterialTheme.typography.labelLarge.copy(lineBreak = LineBreak.Heading),
         color = PureWhite,
-        maxLines = 1,
+        textAlign = TextAlign.Center,
+        maxLines = 2,
         overflow = TextOverflow.Ellipsis,
       )
     }
@@ -153,10 +153,10 @@ fun SehatSecondaryButton(
         containerColor = if (pressed) c.mistSoft else c.surface,
         contentColor = c.deepOcean,
       ),
-    contentPadding = PaddingValues(horizontal = 18.dp, vertical = 12.dp),
+    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
     modifier =
       modifier
-        .defaultMinSize(minHeight = minHeight)
+        .defaultMinSize(minWidth = 48.dp, minHeight = minHeight)
         .scale(scale)
         .then(
           if (enabled) {
@@ -172,17 +172,22 @@ fun SehatSecondaryButton(
         )
         .testTag(testTag),
   ) {
-    if (icon != null) {
-      Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
-      Spacer(modifier = Modifier.width(8.dp))
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+    ) {
+      if (icon != null) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+      }
+      Text(
+        text = text.withNonBreakingUnits(),
+        style = MaterialTheme.typography.labelLarge.copy(lineBreak = LineBreak.Heading),
+        color = if (enabled) c.deepOcean else c.deepOcean.copy(alpha = 0.45f),
+        textAlign = TextAlign.Center,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+      )
     }
-    Text(
-      text = text,
-      style = MaterialTheme.typography.labelLarge,
-      color = if (enabled) c.deepOcean else c.deepOcean.copy(alpha = 0.45f),
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis,
-    )
   }
 }
 
@@ -201,20 +206,25 @@ fun SehatGhostButton(
     enabled = enabled,
     shape = ButtonShape,
     colors = ButtonDefaults.textButtonColors(contentColor = c.clinicalBlueAccent),
-    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
-    modifier = modifier.defaultMinSize(minHeight = 48.dp).testTag(testTag),
+    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+    modifier = modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp).testTag(testTag),
   ) {
-    if (icon != null) {
-      Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(18.dp))
-      Spacer(modifier = Modifier.width(6.dp))
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+    ) {
+      if (icon != null) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+      }
+      Text(
+        text = text.withNonBreakingUnits(),
+        style = MaterialTheme.typography.labelLarge.copy(lineBreak = LineBreak.Heading),
+        color = c.clinicalBlueAccent,
+        textAlign = TextAlign.Center,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+      )
     }
-    Text(
-      text = text,
-      style = MaterialTheme.typography.labelLarge,
-      color = c.clinicalBlueAccent,
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis,
-    )
   }
 }
 
@@ -237,19 +247,24 @@ fun SehatDestructiveButton(
         contentColor = PureWhite,
       ),
     contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
-    modifier = modifier.defaultMinSize(minHeight = 48.dp).testTag(testTag),
+    modifier = modifier.defaultMinSize(minWidth = 48.dp, minHeight = 48.dp).testTag(testTag),
   ) {
-    if (icon != null) {
-      Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
-      Spacer(modifier = Modifier.width(8.dp))
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+    ) {
+      if (icon != null) {
+        Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+      }
+      Text(
+        text = text.withNonBreakingUnits(),
+        style = MaterialTheme.typography.labelLarge.copy(lineBreak = LineBreak.Heading),
+        color = PureWhite,
+        textAlign = TextAlign.Center,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+      )
     }
-    Text(
-      text = text,
-      style = MaterialTheme.typography.labelLarge,
-      color = PureWhite,
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis,
-    )
   }
 }
 
@@ -265,8 +280,13 @@ fun SehatIconButton(
   val resolvedTint = if (tint == Color.Unspecified) SehatPalette.current.deepOcean else tint
   IconButton(
     onClick = onClick,
-    modifier = modifier.minimumInteractiveComponentSize().testTag(testTag),
+    modifier = modifier.minimumInteractiveComponentSize().defaultMinSize(48.dp, 48.dp).testTag(testTag),
   ) {
-    Icon(imageVector = icon, contentDescription = contentDescription, tint = resolvedTint)
+    Icon(
+      imageVector = icon,
+      contentDescription = contentDescription,
+      tint = resolvedTint,
+      modifier = Modifier.size(24.dp),
+    )
   }
 }

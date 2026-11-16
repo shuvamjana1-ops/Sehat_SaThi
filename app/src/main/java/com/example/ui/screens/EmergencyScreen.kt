@@ -112,28 +112,28 @@ fun EmergencyScreen(
           color = PureWhite,
         )
 
-        // Call 112 and Call Family side-by-side (or stacked cleanly on ultra-narrow screens)
+        // Call 112 and Call Family side-by-side (or stacked cleanly on narrow screens < 360dp)
         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-          val stackCalls = maxWidth < 340.dp
+          val stackCalls = maxWidth < 360.dp
           if (stackCalls) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
               Button(
                 onClick = { launchSafeDialer(context, "112") },
                 shape = ButtonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = PureWhite, contentColor = StatusUrgentFg),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 14.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
                 modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 60.dp).scale(callPulse).testTag("emergency_call_112_btn"),
               ) {
                 Icon(Icons.Filled.Call, contentDescription = null, tint = StatusUrgentFg)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Call 112", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg, maxLines = 1)
+                Text("Call 112", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg)
               }
               Button(
                 onClick = { launchSafeDialer(context, primaryCaregiver?.phone ?: "112") },
                 shape = ButtonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = PureWhite.copy(alpha = 0.18f), contentColor = PureWhite),
                 border = BorderStroke(2.dp, PureWhite),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 14.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
                 modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 60.dp).testTag("emergency_call_family_btn"),
               ) {
                 Icon(Icons.Filled.Call, contentDescription = null, tint = PureWhite)
@@ -142,18 +142,16 @@ fun EmergencyScreen(
                   text = primaryCaregiver?.name?.substringBefore(" ")?.let { "Call $it" } ?: "Call family",
                   style = MaterialTheme.typography.titleMedium,
                   color = PureWhite,
-                  maxLines = 1,
-                  overflow = TextOverflow.Ellipsis,
                 )
               }
             }
           } else {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
               Button(
                 onClick = { launchSafeDialer(context, "112") },
                 shape = ButtonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = PureWhite, contentColor = StatusUrgentFg),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 14.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
                 modifier =
                   Modifier
                     .weight(1f)
@@ -162,8 +160,8 @@ fun EmergencyScreen(
                     .testTag("emergency_call_112_btn"),
               ) {
                 Icon(Icons.Filled.Call, contentDescription = null, tint = StatusUrgentFg)
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Call 112", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg, maxLines = 1)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Call 112", style = MaterialTheme.typography.titleMedium, color = StatusUrgentFg)
               }
 
               Button(
@@ -175,7 +173,7 @@ fun EmergencyScreen(
                     contentColor = PureWhite,
                   ),
                 border = BorderStroke(2.dp, PureWhite),
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 14.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
                 modifier =
                   Modifier
                     .weight(1f)
@@ -183,13 +181,11 @@ fun EmergencyScreen(
                     .testTag("emergency_call_family_btn"),
               ) {
                 Icon(Icons.Filled.Call, contentDescription = null, tint = PureWhite)
-                Spacer(modifier = Modifier.width(6.dp))
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                   text = primaryCaregiver?.name?.substringBefore(" ")?.let { "Call $it" } ?: "Call family",
                   style = MaterialTheme.typography.titleMedium,
                   color = PureWhite,
-                  maxLines = 1,
-                  overflow = TextOverflow.Ellipsis,
                 )
               }
             }
@@ -225,15 +221,15 @@ fun EmergencyScreen(
                 },
                 shape = ButtonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = StatusUrgentFg, contentColor = PureWhite),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 12.dp),
                 modifier = Modifier.defaultMinSize(minHeight = 52.dp),
               ) {
                 Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = null, tint = PureWhite)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                   text = "WhatsApp ${primaryCaregiver.name}",
+                  style = MaterialTheme.typography.labelLarge,
                   color = PureWhite,
-                  maxLines = 1,
-                  overflow = TextOverflow.Ellipsis,
                 )
               }
               DemoPillBadge(text = "Demo")

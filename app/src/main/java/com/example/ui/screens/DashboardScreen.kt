@@ -659,20 +659,36 @@ private fun VitalsTile(
       ) {
         Column(modifier = Modifier.weight(1f)) {
           Text("Blood sugar", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
-          Text(
-            text = "${latestReading.glucoseMgDl} mg/dL",
-            style = MaterialTheme.typography.headlineLarge.tabular(),
-            color = c.deepOcean,
-          )
+          Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+              text = "${latestReading.glucoseMgDl}\u00A0mg/dL",
+              style = MaterialTheme.typography.headlineLarge.tabular(),
+              color = c.deepOcean,
+              softWrap = false,
+              modifier = Modifier.alignByBaseline(),
+            )
+          }
           Text(latestReading.contextLabel, style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
         }
         Column(modifier = Modifier.weight(1f)) {
           Text("Blood pressure", style = MaterialTheme.typography.labelMedium, color = c.inkSecondary)
-          Text(
-            text = "${latestReading.systolic}/${latestReading.diastolic}",
-            style = MaterialTheme.typography.headlineLarge.tabular(),
-            color = c.deepOcean,
-          )
+          Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+              text = "${latestReading.systolic}/${latestReading.diastolic}",
+              style = MaterialTheme.typography.headlineLarge.tabular(),
+              color = c.deepOcean,
+              softWrap = false,
+              modifier = Modifier.alignByBaseline(),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+              text = "mmHg",
+              style = MaterialTheme.typography.labelLarge,
+              color = c.inkSecondary,
+              softWrap = false,
+              modifier = Modifier.alignByBaseline(),
+            )
+          }
           Text("mmHg · Latest", style = MaterialTheme.typography.labelSmall, color = c.inkSecondary)
         }
       }

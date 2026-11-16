@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -18,12 +19,14 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.ui.theme.ButtonShape
 import com.example.ui.theme.SehatPalette
@@ -45,23 +48,35 @@ fun SehatTextField(
   keyboardActions: KeyboardActions = KeyboardActions.Default,
   singleLine: Boolean = true,
   enabled: Boolean = true,
+  reserveSupportingSpace: Boolean = false,
   testTag: String = "text_field",
 ) {
   val c = SehatPalette.current
-  Column(modifier = modifier.fillMaxWidth()) {
+  Column(
+    horizontalAlignment = Alignment.Start,
+    modifier = modifier.fillMaxWidth(),
+  ) {
     Text(
       text = label,
       style = MaterialTheme.typography.labelLarge,
       color = c.deepOcean,
+      textAlign = TextAlign.Start,
     )
-    Spacer(modifier = Modifier.height(6.dp))
+    Spacer(modifier = Modifier.height(8.dp))
     OutlinedTextField(
       value = value,
       onValueChange = onValueChange,
       enabled = enabled,
       placeholder =
         if (placeholder.isNotEmpty()) {
-          { Text(placeholder, style = MaterialTheme.typography.bodyMedium, color = c.inkSecondary) }
+          {
+            Text(
+              text = placeholder,
+              style = MaterialTheme.typography.bodyLarge,
+              color = c.inkSecondary,
+              textAlign = TextAlign.Start,
+            )
+          }
         } else null,
       leadingIcon = leadingIcon,
       trailingIcon =
@@ -69,7 +84,7 @@ fun SehatTextField(
           {
             IconButton(
               onClick = onTogglePasswordVisibility,
-              modifier = Modifier.minimumInteractiveComponentSize().testTag("${testTag}_toggle"),
+              modifier = Modifier.minimumInteractiveComponentSize().defaultMinSize(48.dp, 48.dp).testTag("${testTag}_toggle"),
             ) {
               Icon(
                 imageVector =
@@ -88,7 +103,7 @@ fun SehatTextField(
       keyboardOptions = keyboardOptions,
       keyboardActions = keyboardActions,
       shape = ButtonShape,
-      textStyle = MaterialTheme.typography.bodyMedium.copy(color = c.ink),
+      textStyle = MaterialTheme.typography.bodyLarge.copy(color = c.ink, textAlign = TextAlign.Start),
       colors =
         OutlinedTextFieldDefaults.colors(
           focusedContainerColor = c.surface,
@@ -111,20 +126,27 @@ fun SehatTextField(
           }
           .testTag(testTag),
     )
-    if (errorText != null) {
-      Spacer(modifier = Modifier.height(4.dp))
-      Text(
-        text = errorText,
-        style = MaterialTheme.typography.labelMedium,
-        color = c.statusUrgentFg,
-      )
-    } else if (helperText != null) {
-      Spacer(modifier = Modifier.height(4.dp))
-      Text(
-        text = helperText,
-        style = MaterialTheme.typography.labelMedium,
-        color = c.inkSecondary,
-      )
+    if (errorText != null || helperText != null || reserveSupportingSpace) {
+      Box(
+        contentAlignment = Alignment.CenterStart,
+        modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 24.dp),
+      ) {
+        if (errorText != null) {
+          Text(
+            text = errorText,
+            style = MaterialTheme.typography.labelMedium,
+            color = c.statusUrgentFg,
+            textAlign = TextAlign.Start,
+          )
+        } else if (helperText != null) {
+          Text(
+            text = helperText,
+            style = MaterialTheme.typography.labelMedium,
+            color = c.inkSecondary,
+            textAlign = TextAlign.Start,
+          )
+        }
+      }
     }
   }
 }

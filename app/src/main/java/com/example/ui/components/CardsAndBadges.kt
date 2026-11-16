@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -47,6 +48,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import com.example.data.HealthStatusLevel
 import com.example.ui.theme.CardShape
@@ -59,6 +61,7 @@ import com.example.ui.theme.PillShape
 import com.example.ui.theme.PureWhite
 import com.example.ui.theme.SehatPalette
 import com.example.ui.theme.rememberPrefersReducedTransparency
+import com.example.ui.theme.tabular
 
 @Composable
 fun SehatCard(
@@ -246,19 +249,20 @@ fun StatusChip(
 
   Row(
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.Center,
+    horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
     modifier =
       modifier
+        .defaultMinSize(minHeight = 32.dp)
         .background(color = bg, shape = PillShape)
         .border(width = 1.dp, color = border, shape = PillShape)
         .padding(horizontal = 12.dp, vertical = 6.dp),
   ) {
     Icon(imageVector = icon, contentDescription = null, tint = fg, modifier = Modifier.size(16.dp))
-    Spacer(modifier = Modifier.width(6.dp))
     Text(
       text = label,
       style = MaterialTheme.typography.labelMedium,
       color = fg,
+      softWrap = false,
     )
   }
 }
@@ -278,16 +282,58 @@ fun DemoPillBadge(
         brush = Brush.horizontalGradient(listOf(c.clinicalBlueAccent.copy(alpha = 0.35f), c.hairlineBorder)),
       ),
     shadowElevation = 1.dp,
-    modifier = modifier,
+    modifier = modifier.defaultMinSize(minHeight = 28.dp),
   ) {
-    Text(
-      text = text,
-      style = MaterialTheme.typography.labelSmall,
-      color = c.statusInfoFg,
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.Center,
       modifier =
         Modifier
           .background(Brush.horizontalGradient(listOf(c.mist, c.mistSoft)))
-          .padding(horizontal = 11.dp, vertical = 4.dp),
+          .padding(horizontal = 12.dp, vertical = 4.dp),
+    ) {
+      Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = c.statusInfoFg,
+        softWrap = false,
+      )
+    }
+  }
+}
+
+/**
+ * Renders a large numeric value and its unit on the same typographical baseline
+ * with tabular numerals and non-breaking unit behavior so the number and unit never split.
+ */
+@Composable
+fun BaselineValueWithUnit(
+  value: String,
+  unit: String,
+  modifier: Modifier = Modifier,
+  valueStyle: TextStyle = MaterialTheme.typography.displayMedium.tabular(),
+  unitStyle: TextStyle = MaterialTheme.typography.labelLarge,
+  valueColor: Color = SehatPalette.current.deepOcean,
+  unitColor: Color = SehatPalette.current.inkSecondary,
+) {
+  Row(
+    verticalAlignment = Alignment.Bottom,
+    modifier = modifier,
+  ) {
+    Text(
+      text = value,
+      style = valueStyle,
+      color = valueColor,
+      softWrap = false,
+      modifier = Modifier.alignByBaseline(),
+    )
+    Spacer(modifier = Modifier.width(6.dp))
+    Text(
+      text = unit,
+      style = unitStyle,
+      color = unitColor,
+      softWrap = false,
+      modifier = Modifier.alignByBaseline(),
     )
   }
 }

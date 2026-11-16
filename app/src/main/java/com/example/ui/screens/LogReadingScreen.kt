@@ -312,7 +312,7 @@ fun LogReadingScreen(
           ) {
             Row(
               verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.Center,
+              horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally),
               modifier = Modifier.padding(horizontal = 8.dp, vertical = 10.dp),
             ) {
               Icon(
@@ -321,13 +321,12 @@ fun LogReadingScreen(
                 tint = if (selected) PureWhite else c.deepOcean,
                 modifier = Modifier.size(18.dp),
               )
-              Spacer(modifier = Modifier.width(6.dp))
               Text(
                 text = mode.label,
                 style = MaterialTheme.typography.labelLarge,
                 color = if (selected) PureWhite else c.deepOcean,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                maxLines = 2,
+                textAlign = TextAlign.Center,
               )
             }
           }

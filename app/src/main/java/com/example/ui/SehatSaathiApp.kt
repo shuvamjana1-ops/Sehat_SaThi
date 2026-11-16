@@ -371,17 +371,27 @@ fun SehatSaathiApp(
               onSetThemePreference = viewModel::setThemePreference,
               onSetSimpleMode = viewModel::setSimpleMode,
               onSaveProfile = viewModel::updatePatientProfile,
+              onSaveFullProfile = viewModel::updateFullPatientProfile,
               onSaveReminderPrefs = viewModel::updateReminderPreferences,
               onUpdateThresholds = viewModel::updateRiskThresholds,
               onAddCaregiverInvite = viewModel::addCaregiverInvite,
               onAcceptCaregiverDemo = viewModel::acceptCaregiverConsentDemo,
               onRevokeCaregiver = viewModel::revokeCaregiverConsent,
+              onUpdateCaregiverPermission = viewModel::updateCaregiverSharingPermission,
+              onResendCaregiverInvite = viewModel::resendCaregiverInvite,
+              onUpdateAvatar = viewModel::updateAvatarBitmap,
+              onUpdateCover = viewModel::updateCoverBitmap,
+              onTogglePhotoPrivacy = viewModel::togglePhotoPrivacy,
+              onToggleHideAchievements = viewModel::toggleHideAchievements,
+              onDismissCompleteness = viewModel::dismissProfileCompleteness,
+              onUpdateNotificationSwitches = viewModel::updateNotificationSwitches,
               onVerifyReauth = viewModel::verifyReauth,
               onDeleteAccount = { text -> viewModel.deleteAccountAndAllData(text, context) },
               onResetDemoData = viewModel::resetDemoData,
               onLogout = viewModel::logout,
               onToggleOfflineSimulation = viewModel::toggleOfflineSimulation,
               onSyncOfflineQueue = viewModel::syncOfflineQueue,
+              onNavigate = { route -> navigateInsideShell(navController, route) },
               onShowToast = viewModel::showToast,
             )
           }
@@ -455,7 +465,7 @@ private fun routePageTitle(route: String, infoSectionArg: String?): String =
     AppRoutes.MEDICINES -> "Medicines & refills"
     AppRoutes.TRENDS -> "Trends & summary"
     AppRoutes.FAMILY -> "Family & alerts"
-    AppRoutes.ACCOUNT -> "Account & security"
+    AppRoutes.ACCOUNT -> "Profile"
     AppRoutes.NOT_FOUND -> "Page not found"
     AppRoutes.INFO_ROUTE ->
       InfoSection.entries.firstOrNull { it.name.equals(infoSectionArg, ignoreCase = true) }?.title

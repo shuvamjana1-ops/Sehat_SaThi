@@ -56,6 +56,8 @@ class AuthSessionRepository(private val context: Context) {
     val EMAIL = stringPreferencesKey("email")
     val GUIDED_TOUR_DISMISSED = booleanPreferencesKey("guided_tour_dismissed")
     val THEME_PREFERENCE = stringPreferencesKey("theme_preference")
+    fun profileJsonKey(email: String) =
+      stringPreferencesKey("profile_json_${email.trim().lowercase().ifEmpty { "default" }}")
   }
 
   val sessionFlow: Flow<AuthSession> =
@@ -78,6 +80,17 @@ class AuthSessionRepository(private val context: Context) {
       ThemePreference.entries.firstOrNull { it.name == prefs[Keys.THEME_PREFERENCE] }
         ?: ThemePreference.SYSTEM
     }
+
+  fun profileJsonFlowFor(email: String): Flow<String?> =
+    context.sehatDataStore.data.map { prefs ->
+      prefs[Keys.profileJsonKey(email)]
+    }
+
+  suspend fun saveProfileJsonFor(email: String, json: String) {
+    context.sehatDataStore.edit { prefs ->
+      prefs[Keys.profileJsonKey(email)] = json
+    }
+  }
 
   suspend fun setGuidedTourDismissed(dismissed: Boolean) {
     context.sehatDataStore.edit { prefs ->
@@ -113,6 +126,9 @@ class AuthSessionRepository(private val context: Context) {
 
   suspend fun clearSession() {
     context.sehatDataStore.edit { prefs -> prefs.clear() }
+    runCatching {
+      java.io.File(context.filesDir, "profile_photos").deleteRecursively()
+    }
   }
 
   companion object {

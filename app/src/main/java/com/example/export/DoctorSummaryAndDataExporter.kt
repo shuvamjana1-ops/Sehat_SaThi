@@ -372,7 +372,17 @@ object DoctorSummaryAndDataExporter {
     val patientObj = JSONObject().apply {
       put("id", state.patient.id)
       put("name", state.patient.name)
+      put("handle", state.patient.handle)
+      put("bio", state.patient.bio)
+      put("date_of_birth", state.patient.dateOfBirth)
       put("age", state.patient.age)
+      put("gender", state.patient.gender)
+      put("city", state.patient.city)
+      put("phone", state.patient.phone)
+      put("blood_group", state.patient.bloodGroup)
+      put("allergies", JSONArray(state.patient.allergies))
+      put("height", "${state.patient.heightValue} ${state.patient.heightUnit}".trim())
+      put("weight", "${state.patient.weightValue} ${state.patient.weightUnit}".trim())
       put("conditions", JSONArray(state.patient.conditions))
       put("emergency_number", state.patient.emergencyNumber)
       put("pharmacy_name", state.patient.pharmacyName)
@@ -436,6 +446,7 @@ object DoctorSummaryAndDataExporter {
           put("phone", c.phone)
           put("consent_status", c.consentStatus)
           put("priority", c.priority)
+          put("shared_items", JSONArray(c.permissions.summaryLabels()))
         },
       )
     }
@@ -464,10 +475,22 @@ object DoctorSummaryAndDataExporter {
     return outFile
   }
 
+  fun generateCareCardPdf(
+    context: Context,
+    careCardText: String,
+  ): File {
+    val dir = File(context.cacheDir, "exports").apply { mkdirs() }
+    val outFile = File(dir, "SehatSaathi_Care_Card.pdf")
+    val lines = careCardText.lines().filter { it.isNotBlank() }
+    writeMinimalValidPdf(outFile, lines)
+    return outFile
+  }
+
   fun clearExportCache(context: Context) {
     runCatching {
       File(context.cacheDir, "exports").deleteRecursively()
       File(context.cacheDir, "captures").deleteRecursively()
+      File(context.filesDir, "profile_photos").deleteRecursively()
     }
   }
 

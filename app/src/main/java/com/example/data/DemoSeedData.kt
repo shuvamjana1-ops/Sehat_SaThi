@@ -23,6 +23,51 @@ enum class DaySlot(val title: String, val timeWindow: String) {
   NIGHT("Night", "9:00 PM"),
 }
 
+data class EmergencyContactEntry(
+  val id: String,
+  val name: String,
+  val relationship: String,
+  val phone: String,
+  val isPrimary: Boolean = false,
+)
+
+data class CaregiverSharingPermissions(
+  val readings: Boolean = false,
+  val medicines: Boolean = false,
+  val refills: Boolean = false,
+  val alerts: Boolean = false,
+  val emergencyInfo: Boolean = false,
+) {
+  val anyEnabled: Boolean
+    get() = readings || medicines || refills || alerts || emergencyInfo
+
+  fun summaryLabels(): List<String> = buildList {
+    if (readings) add("Readings")
+    if (medicines) add("Medicines")
+    if (refills) add("Refills")
+    if (alerts) add("Alerts")
+    if (emergencyInfo) add("Emergency info")
+  }
+
+  companion object {
+    val DEFAULT_OFF = CaregiverSharingPermissions()
+    val DEFAULT_CONSENTED =
+      CaregiverSharingPermissions(
+        readings = true,
+        medicines = true,
+        refills = true,
+        alerts = true,
+        emergencyInfo = true,
+      )
+  }
+}
+
+data class NotificationSwitchPrefs(
+  val missedDoseNudges: Boolean = true,
+  val weeklySummary: Boolean = true,
+  val lowStockReminders: Boolean = true,
+)
+
 data class PatientProfile(
   val id: String,
   val name: String,
@@ -31,6 +76,39 @@ data class PatientProfile(
   val emergencyNumber: String,
   val pharmacyName: String = "Verma Medicos / Jan Aushadhi",
   val pharmacyPhone: String,
+  val handle: String = "sunita.devi",
+  val bio: String = "Managing daily sugar & BP calmly with morning walks and family support.",
+  val dateOfBirth: String = "1959-04-12",
+  val gender: String = "Female",
+  val city: String = "Pune",
+  val phone: String = "+91 98200 00111",
+  val bloodGroup: String = "B+",
+  val allergies: List<String> = listOf("Sulfa drugs"),
+  val heightValue: String = "158",
+  val heightUnit: String = "cm",
+  val weightValue: String = "64",
+  val weightUnit: String = "kg",
+  val emergencyContacts: List<EmergencyContactEntry> =
+    listOf(
+      EmergencyContactEntry(
+        id = "ec-1",
+        name = "Rohit Sharma",
+        relationship = "Son",
+        phone = "+91 98200 11223",
+        isPrimary = true,
+      ),
+      EmergencyContactEntry(
+        id = "ec-2",
+        name = "Priya Verma",
+        relationship = "Daughter",
+        phone = "+91 98200 44556",
+        isPrimary = false,
+      ),
+    ),
+  val showPhotoToCaregivers: Boolean = true,
+  val useInitialsOnly: Boolean = false,
+  val hideAchievements: Boolean = false,
+  val completenessDismissed: Boolean = false,
 )
 
 data class ReminderPreferences(
@@ -113,6 +191,13 @@ data class SeededCaregiver(
   val phone: String,
   val consentStatus: String,
   val priority: Int,
+  val sinceLabel: String = "Oct 2026",
+  val permissions: CaregiverSharingPermissions =
+    if (consentStatus.equals("Consented", ignoreCase = true)) {
+      CaregiverSharingPermissions.DEFAULT_CONSENTED
+    } else {
+      CaregiverSharingPermissions.DEFAULT_OFF
+    },
 )
 
 object DemoSeedData {

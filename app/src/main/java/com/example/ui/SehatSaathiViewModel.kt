@@ -13,12 +13,15 @@ import com.example.ai.PrescriptionAiParser
 import com.example.ai.VitalsAiParser
 import com.example.data.AuthSession
 import com.example.data.AuthSessionRepository
+import com.example.data.CaregiverSharingPermissions
 import com.example.data.ConnectivityObserver
 import com.example.data.DaySlot
 import com.example.data.DemoSeedData
 import com.example.data.DrugKnowledgeDataset
 import com.example.data.DrugKnowledgeRepository
+import com.example.data.EmergencyContactEntry
 import com.example.data.HealthStatusLevel
+import com.example.data.NotificationSwitchPrefs
 import com.example.data.OfflineQueueHelper
 import com.example.data.OfflineQueuedTask
 import com.example.data.OfflineTaskKind
@@ -33,6 +36,7 @@ import com.example.data.SeededReading
 import com.example.domain.demo.DemoScenario
 import com.example.domain.demo.createSamplePrescriptionBitmap
 import com.example.domain.drugs.InteractionChecker
+import com.example.domain.profile.ProfileDomain
 import com.example.domain.drugs.InteractionWarning
 import com.example.domain.drugs.MedicineCheckInput
 import com.example.domain.drugs.MedicineSafetyCheckReport
@@ -139,6 +143,10 @@ data class SehatSaathiUiState(
   val caregiverViewMode: Boolean = false,
   val weeklyDigestOptedIn: Boolean = true,
   val simpleModeActive: Boolean = false,
+  val avatarBitmap: Bitmap? = null,
+  val coverBitmap: Bitmap? = null,
+  val notificationSwitches: NotificationSwitchPrefs = NotificationSwitchPrefs(),
+  val hasScannedPrescription: Boolean = false,
   val toastMessage: String? = null,
 ) {
   val effectiveOnline: Boolean
@@ -1309,6 +1317,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
         medicines = mergedMeds,
         dosesToday = mergedDoses,
         activeSafetyReport = refreshedReport,
+        hasScannedPrescription = true,
         rxScanner = state.rxScanner.copy(step = 3),
         toastMessage = "Added ${newSeededMeds.size} medicine(s) to your daily schedule.",
       )
@@ -1414,11 +1423,11 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
     pharmacyName: String,
     pharmacyPhone: String,
   ) {
-    val cleanedName = name.trim().ifEmpty { _uiState.value.patient.name }
+    val cleanedName = ProfileDomain.sanitizeText(name, ProfileDomain.MAX_NAME_LENGTH).ifEmpty { _uiState.value.patient.name }
     val parsedConditions =
       conditionsText
         .split(",")
-        .map { it.trim() }
+        .map { ProfileDomain.sanitizeText(it, 48) }
         .filter { it.isNotEmpty() }
         .ifEmpty { _uiState.value.patient.conditions }
     _uiState.update { state ->
@@ -1428,10 +1437,130 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
             name = cleanedName,
             age = age.coerceIn(1, 120),
             conditions = parsedConditions,
-            pharmacyName = pharmacyName.trim().ifEmpty { state.patient.pharmacyName },
-            pharmacyPhone = pharmacyPhone.trim().ifEmpty { state.patient.pharmacyPhone },
+            pharmacyName = ProfileDomain.sanitizeText(pharmacyName, 80).ifEmpty { state.patient.pharmacyName },
+            pharmacyPhone = ProfileDomain.sanitizeText(pharmacyPhone, 24).ifEmpty { state.patient.pharmacyPhone },
           ),
-        toastMessage = "Profile & pharmacy details saved.",
+        toastMessage = "Profile updated",
+      )
+    }
+  }
+
+  fun updateFullPatientProfile(
+    updatedPatient: PatientProfile,
+    updatedReminders: ReminderPreferences? = null,
+  ) {
+    _uiState.update { state ->
+      // Keep caregivers synchronized with emergency contacts so SOS and family alerts stay consistent
+      val updatedCaregivers =
+        if (updatedPatient.emergencyContacts.isNotEmpty()) {
+          val existingByIdOrPhone = state.caregivers.associateBy { it.phone.filter { ch -> ch.isDigit() } }
+          val syncedFromEmergency =
+            updatedPatient.emergencyContacts.mapIndexed { idx, ec ->
+              val match = existingByIdOrPhone[ec.phone.filter { ch -> ch.isDigit() }]
+              SeededCaregiver(
+                id = match?.id ?: ec.id,
+                name = ec.name,
+                relationship =
+                  if (ec.isPrimary && !ec.relationship.contains("Primary", ignoreCase = true)) {
+                    "${ec.relationship} (Primary)"
+                  } else {
+                    ec.relationship
+                  },
+                phone = ec.phone,
+                consentStatus = match?.consentStatus ?: "Consented",
+                priority = if (ec.isPrimary) 1 else (idx + 2),
+                sinceLabel = match?.sinceLabel ?: "Nov 2026",
+                permissions = match?.permissions ?: CaregiverSharingPermissions.DEFAULT_CONSENTED,
+              )
+            }.sortedBy { it.priority }
+          syncedFromEmergency
+        } else {
+          state.caregivers
+        }
+
+      state.copy(
+        patient = updatedPatient,
+        reminderPrefs = updatedReminders ?: state.reminderPrefs,
+        caregivers = updatedCaregivers,
+        toastMessage = "Profile updated",
+      )
+    }
+  }
+
+  fun updateAvatarBitmap(bitmap: Bitmap?) {
+    _uiState.update {
+      it.copy(
+        avatarBitmap = bitmap,
+        toastMessage = if (bitmap != null) "Avatar photo updated" else "Avatar photo removed",
+      )
+    }
+  }
+
+  fun updateCoverBitmap(bitmap: Bitmap?) {
+    _uiState.update {
+      it.copy(
+        coverBitmap = bitmap,
+        toastMessage = if (bitmap != null) "Cover photo updated" else "Cover photo removed",
+      )
+    }
+  }
+
+  fun togglePhotoPrivacy(showPhotoToCaregivers: Boolean, useInitialsOnly: Boolean) {
+    _uiState.update { state ->
+      state.copy(
+        patient =
+          state.patient.copy(
+            showPhotoToCaregivers = showPhotoToCaregivers,
+            useInitialsOnly = useInitialsOnly,
+          ),
+        toastMessage = "Photo privacy settings saved.",
+      )
+    }
+  }
+
+  fun toggleHideAchievements(hide: Boolean) {
+    _uiState.update { state ->
+      state.copy(
+        patient = state.patient.copy(hideAchievements = hide),
+        toastMessage = if (hide) "Achievements hidden on profile." else "Achievements visible on profile.",
+      )
+    }
+  }
+
+  fun dismissProfileCompleteness() {
+    _uiState.update { state ->
+      state.copy(patient = state.patient.copy(completenessDismissed = true))
+    }
+  }
+
+  fun updateNotificationSwitches(prefs: NotificationSwitchPrefs) {
+    _uiState.update {
+      it.copy(
+        notificationSwitches = prefs,
+        weeklyDigestOptedIn = prefs.weeklySummary,
+        toastMessage = "Notification preferences saved on this device.",
+      )
+    }
+  }
+
+  fun updateCaregiverSharingPermission(
+    caregiverId: String,
+    transform: (CaregiverSharingPermissions) -> CaregiverSharingPermissions,
+  ) {
+    _uiState.update { state ->
+      val updated = ProfileDomain.updateCaregiverPermission(state.caregivers, caregiverId, transform)
+      state.copy(
+        caregivers = updated,
+        toastMessage = "Caregiver sharing permissions updated immediately.",
+      )
+    }
+  }
+
+  fun resendCaregiverInvite(caregiverId: String) {
+    _uiState.update { state ->
+      val target = state.caregivers.find { it.id == caregiverId }
+      state.copy(
+        toastMessage = "Resent consent invite to ${target?.name ?: "caregiver"} (Demo).",
       )
     }
   }
@@ -1455,7 +1584,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
   }
 
   fun addCaregiverInvite(name: String, relationship: String, phone: String): String? {
-    val cleanName = name.trim()
+    val cleanName = ProfileDomain.sanitizeText(name, 60)
     val cleanPhone = phone.trim()
     if (cleanName.length < 2) return "Please enter the family contact's name."
     if (cleanPhone.length < 7) return "Please enter a valid phone number."
@@ -1464,10 +1593,12 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
       SeededCaregiver(
         id = "cg-${System.currentTimeMillis()}",
         name = cleanName,
-        relationship = relationship.trim().ifEmpty { "Family" },
+        relationship = ProfileDomain.sanitizeText(relationship, 32).ifEmpty { "Family" },
         phone = cleanPhone,
         consentStatus = "Pending invite",
         priority = nextPriority,
+        sinceLabel = "Invited today",
+        permissions = CaregiverSharingPermissions.DEFAULT_OFF,
       )
     _uiState.update { state ->
       state.copy(
@@ -1482,7 +1613,15 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
     _uiState.update { state ->
       val updated =
         state.caregivers.map { cg ->
-          if (cg.id == caregiverId) cg.copy(consentStatus = "Consented") else cg
+          if (cg.id == caregiverId) {
+            cg.copy(
+              consentStatus = "Consented",
+              sinceLabel = "Just now",
+              permissions = CaregiverSharingPermissions.DEFAULT_CONSENTED,
+            )
+          } else {
+            cg
+          }
         }
       state.copy(
         caregivers = updated,
@@ -1515,12 +1654,15 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
   fun deleteAccountAndAllData(confirmationText: String, context: Context): Boolean {
     if (confirmationText.trim() != "DELETE") return false
     DoctorSummaryAndDataExporter.clearExportCache(context)
+    resetDemoDataInternal()
+    _uiState.update {
+      it.copy(
+        session = AuthSession(),
+        toastMessage = "Account and all local SehatSaathi data permanently deleted.",
+      )
+    }
     viewModelScope.launch {
       repository.clearSession()
-      resetDemoDataInternal()
-      _uiState.update {
-        it.copy(toastMessage = "Account and all local SehatSaathi data permanently deleted.")
-      }
     }
     return true
   }
@@ -1567,6 +1709,10 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
         activeDemoScenario = null,
         activeDemoScenarioCaption = null,
         pendingDemoNavigationRoute = null,
+        avatarBitmap = null,
+        coverBitmap = null,
+        notificationSwitches = NotificationSwitchPrefs(),
+        hasScannedPrescription = false,
       )
     }
   }
@@ -1692,10 +1838,15 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
   }
 
   fun logout() {
+    resetDemoDataInternal()
+    _uiState.update {
+      it.copy(
+        session = AuthSession(),
+        toastMessage = "Signed out and cleared local session data.",
+      )
+    }
     viewModelScope.launch {
       repository.clearSession()
-      resetDemoDataInternal()
-      _uiState.update { it.copy(toastMessage = "Signed out and cleared local session data.") }
     }
   }
 
