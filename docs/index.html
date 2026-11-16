@@ -675,7 +675,11 @@
         notice.innerHTML = '⏳ Checking signed Android APK package (<code>SehatSaathi-debug.apk</code>)...';
       }
 
-      var candidates = ['./SehatSaathi-debug.apk', './docs/SehatSaathi-debug.apk'];
+      var candidates = [
+        './SehatSaathi-debug.apk',
+        './docs/SehatSaathi-debug.apk',
+        'https://raw.githubusercontent.com/shuvamjana1-ops/Sehat_SaThi/gh-pages/SehatSaathi-debug.apk'
+      ];
 
       function tryLocal(idx) {
         if (idx >= candidates.length) {
