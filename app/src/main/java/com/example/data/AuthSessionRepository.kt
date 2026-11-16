@@ -19,7 +19,19 @@ data class AuthSession(
   val isDemoMode: Boolean = false,
   val displayName: String = "",
   val email: String = "",
-)
+  val savedPersonalName: String = "",
+  val savedPersonalEmail: String = "",
+  val savedPersonalAge: Int = 54,
+  val savedPersonalConditions: String = "Type-2 Diabetes, Hypertension",
+  val savedPersonalCity: String = "",
+  val savedPersonalBloodGroup: String = "",
+  val savedPersonalBio: String = "",
+) {
+  val hasSavedPersonalAccount: Boolean
+    get() =
+      savedPersonalName.isNotBlank() &&
+        !savedPersonalName.equals(DemoSeedData.patient.name, ignoreCase = true)
+}
 
 data class PasswordStrengthResult(
   val hasMinLength: Boolean,
@@ -54,6 +66,13 @@ class AuthSessionRepository(private val context: Context) {
     val IS_DEMO = booleanPreferencesKey("is_demo_mode")
     val DISPLAY_NAME = stringPreferencesKey("display_name")
     val EMAIL = stringPreferencesKey("email")
+    val SAVED_PERSONAL_NAME = stringPreferencesKey("saved_personal_name")
+    val SAVED_PERSONAL_EMAIL = stringPreferencesKey("saved_personal_email")
+    val SAVED_PERSONAL_AGE = stringPreferencesKey("saved_personal_age")
+    val SAVED_PERSONAL_CONDITIONS = stringPreferencesKey("saved_personal_conditions")
+    val SAVED_PERSONAL_CITY = stringPreferencesKey("saved_personal_city")
+    val SAVED_PERSONAL_BLOOD_GROUP = stringPreferencesKey("saved_personal_blood_group")
+    val SAVED_PERSONAL_BIO = stringPreferencesKey("saved_personal_bio")
     val GUIDED_TOUR_DISMISSED = booleanPreferencesKey("guided_tour_dismissed")
     val THEME_PREFERENCE = stringPreferencesKey("theme_preference")
     fun profileJsonKey(email: String) =
@@ -67,6 +86,14 @@ class AuthSessionRepository(private val context: Context) {
         isDemoMode = prefs[Keys.IS_DEMO] ?: false,
         displayName = prefs[Keys.DISPLAY_NAME] ?: "",
         email = prefs[Keys.EMAIL] ?: "",
+        savedPersonalName = prefs[Keys.SAVED_PERSONAL_NAME] ?: "",
+        savedPersonalEmail = prefs[Keys.SAVED_PERSONAL_EMAIL] ?: "",
+        savedPersonalAge = (prefs[Keys.SAVED_PERSONAL_AGE]?.toIntOrNull() ?: 54).coerceIn(1, 120),
+        savedPersonalConditions =
+          prefs[Keys.SAVED_PERSONAL_CONDITIONS] ?: "Type-2 Diabetes, Hypertension",
+        savedPersonalCity = prefs[Keys.SAVED_PERSONAL_CITY] ?: "",
+        savedPersonalBloodGroup = prefs[Keys.SAVED_PERSONAL_BLOOD_GROUP] ?: "",
+        savedPersonalBio = prefs[Keys.SAVED_PERSONAL_BIO] ?: "",
       )
     }
 
@@ -114,7 +141,16 @@ class AuthSessionRepository(private val context: Context) {
   }
 
   // Local account session: marks isDemoMode = false when a real user name/email is used
-  suspend fun startLocalAccountSession(name: String, email: String) {
+  // and saves the personal profile so the user can switch between Demo and Personal anytime.
+  suspend fun startLocalAccountSession(
+    name: String,
+    email: String,
+    age: Int? = null,
+    conditionsCsv: String? = null,
+    city: String? = null,
+    bloodGroup: String? = null,
+    bio: String? = null,
+  ) {
     val cleanName = name.trim().ifEmpty { "Patient" }
     val cleanEmail = email.trim().lowercase()
     val isSunitaDemo =
@@ -125,13 +161,43 @@ class AuthSessionRepository(private val context: Context) {
       prefs[Keys.IS_DEMO] = isSunitaDemo
       prefs[Keys.DISPLAY_NAME] = cleanName
       prefs[Keys.EMAIL] = cleanEmail
+      if (!isSunitaDemo) {
+        prefs[Keys.SAVED_PERSONAL_NAME] = cleanName
+        prefs[Keys.SAVED_PERSONAL_EMAIL] = cleanEmail
+        if (age != null) prefs[Keys.SAVED_PERSONAL_AGE] = age.coerceIn(1, 120).toString()
+        if (!conditionsCsv.isNullOrBlank()) prefs[Keys.SAVED_PERSONAL_CONDITIONS] = conditionsCsv
+        if (city != null) prefs[Keys.SAVED_PERSONAL_CITY] = city
+        if (bloodGroup != null) prefs[Keys.SAVED_PERSONAL_BLOOD_GROUP] = bloodGroup
+        if (bio != null) prefs[Keys.SAVED_PERSONAL_BIO] = bio
+      }
     }
+  }
+
+  suspend fun switchToSavedPersonalSession(): Boolean {
+    var switched = false
+    context.sehatDataStore.edit { prefs ->
+      val savedName = prefs[Keys.SAVED_PERSONAL_NAME]?.trim().orEmpty()
+      val savedEmail = prefs[Keys.SAVED_PERSONAL_EMAIL]?.trim().orEmpty()
+      if (savedName.isNotEmpty()) {
+        prefs[Keys.IS_AUTH] = true
+        prefs[Keys.IS_DEMO] = false
+        prefs[Keys.DISPLAY_NAME] = savedName
+        prefs[Keys.EMAIL] = savedEmail
+        switched = true
+      }
+    }
+    return switched
   }
 
   suspend fun updateProfileIdentity(
     name: String,
     email: String,
     isDemoMode: Boolean,
+    age: Int? = null,
+    conditionsCsv: String? = null,
+    city: String? = null,
+    bloodGroup: String? = null,
+    bio: String? = null,
   ) {
     val cleanName = name.trim()
     val cleanEmail = email.trim().lowercase()
@@ -143,6 +209,24 @@ class AuthSessionRepository(private val context: Context) {
         prefs[Keys.EMAIL] = cleanEmail
       }
       prefs[Keys.IS_DEMO] = isDemoMode
+      if (!isDemoMode && cleanName.isNotEmpty() && !cleanName.equals(DemoSeedData.patient.name, ignoreCase = true)) {
+        prefs[Keys.SAVED_PERSONAL_NAME] = cleanName
+        if (cleanEmail.isNotEmpty()) {
+          prefs[Keys.SAVED_PERSONAL_EMAIL] = cleanEmail
+        }
+        if (age != null) prefs[Keys.SAVED_PERSONAL_AGE] = age.coerceIn(1, 120).toString()
+        if (!conditionsCsv.isNullOrBlank()) prefs[Keys.SAVED_PERSONAL_CONDITIONS] = conditionsCsv
+        if (city != null) prefs[Keys.SAVED_PERSONAL_CITY] = city
+        if (bloodGroup != null) prefs[Keys.SAVED_PERSONAL_BLOOD_GROUP] = bloodGroup
+        if (bio != null) prefs[Keys.SAVED_PERSONAL_BIO] = bio
+      }
+    }
+  }
+
+  suspend fun logoutSessionOnly() {
+    context.sehatDataStore.edit { prefs ->
+      prefs[Keys.IS_AUTH] = false
+      prefs[Keys.IS_DEMO] = false
     }
   }
 

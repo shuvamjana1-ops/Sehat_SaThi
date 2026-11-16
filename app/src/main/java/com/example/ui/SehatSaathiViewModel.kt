@@ -138,6 +138,7 @@ data class SehatSaathiUiState(
   val activeDemoScenario: DemoScenario? = null,
   val activeDemoScenarioCaption: String? = null,
   val pendingDemoNavigationRoute: String? = null,
+  val pendingPublicNavigationRoute: String? = null,
   val guidedTourDismissed: Boolean = true,
   val themePreference: ThemePreference = ThemePreference.SYSTEM,
   val caregiverViewMode: Boolean = false,
@@ -178,20 +179,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
     viewModelScope.launch {
       val initialSession = repository.sessionFlow.first()
       _uiState.update { state ->
-        val syncedPatient =
-          if (initialSession.isAuthenticated && initialSession.displayName.isNotBlank()) {
-            val clean = initialSession.displayName.trim()
-            val slug = clean.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), ".").trim('.').ifEmpty { "patient" }
-            val nextHandle =
-              if (state.patient.handle.equals("sunita.devi", ignoreCase = true) && !clean.equals("Sunita Devi", ignoreCase = true)) {
-                slug
-              } else {
-                state.patient.handle
-              }
-            state.patient.copy(name = clean, handle = nextHandle)
-          } else {
-            DemoSeedData.patient
-          }
+        val syncedPatient = buildSyncedPatientForSession(initialSession, state.patient)
         val syncedAlerts =
           if (!syncedPatient.name.equals("Sunita Devi", ignoreCase = true)) {
             state.alerts.map { a ->
@@ -201,7 +189,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
               )
             }
           } else {
-            state.alerts
+            DemoSeedData.alerts
           }
         state.copy(
           isSessionLoaded = true,
@@ -213,30 +201,20 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
       }
       repository.sessionFlow.collect { session ->
         _uiState.update { state ->
-          val syncedPatient =
-            if (session.isAuthenticated && session.displayName.isNotBlank()) {
-              val clean = session.displayName.trim()
-              val slug = clean.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), ".").trim('.').ifEmpty { "patient" }
-              val nextHandle =
-                if (state.patient.handle.equals("sunita.devi", ignoreCase = true) && !clean.equals("Sunita Devi", ignoreCase = true)) {
-                  slug
-                } else {
-                  state.patient.handle
-                }
-              state.patient.copy(name = clean, handle = nextHandle)
-            } else {
-              DemoSeedData.patient
-            }
+          val syncedPatient = buildSyncedPatientForSession(session, state.patient)
           val syncedAlerts =
             if (!syncedPatient.name.equals("Sunita Devi", ignoreCase = true)) {
               state.alerts.map { a ->
                 a.copy(
-                  message = a.message.replace("Sunita Devi", syncedPatient.name, ignoreCase = true),
+                  message =
+                    a.message
+                      .replace("Sunita Devi", syncedPatient.name, ignoreCase = true)
+                      .replace(state.patient.name, syncedPatient.name, ignoreCase = true),
                   isDemo = session.isDemoMode,
                 )
               }
             } else {
-              state.alerts
+              DemoSeedData.alerts
             }
           state.copy(
             session = session,
@@ -283,13 +261,149 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
     }
   }
 
+  private fun buildSyncedPatientForSession(
+    session: AuthSession,
+    current: PatientProfile,
+  ): PatientProfile {
+    if (!session.isAuthenticated || session.displayName.isBlank()) {
+      return DemoSeedData.patient
+    }
+    if (session.isDemoMode && session.displayName.equals(DemoSeedData.patient.name, ignoreCase = true)) {
+      return DemoSeedData.patient
+    }
+    val clean = session.displayName.trim()
+    val slug =
+      clean.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), ".").trim('.').ifEmpty { "patient" }
+    val nextHandle =
+      if (
+        current.handle.isBlank() ||
+          (current.handle.equals("sunita.devi", ignoreCase = true) && !clean.equals("Sunita Devi", ignoreCase = true))
+      ) {
+        slug
+      } else {
+        current.handle
+      }
+    val parsedConditions =
+      session.savedPersonalConditions
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+        .ifEmpty { current.conditions }
+    val nextBio =
+      when {
+        session.savedPersonalBio.isNotBlank() -> session.savedPersonalBio
+        current.bio == DemoSeedData.patient.bio && !clean.equals("Sunita Devi", ignoreCase = true) ->
+          "Personal daily vitals, medication schedule, and family care profile for $clean."
+        else -> current.bio
+      }
+    val nextAge =
+      if (!clean.equals("Sunita Devi", ignoreCase = true) && current.age == DemoSeedData.patient.age) {
+        session.savedPersonalAge
+      } else {
+        current.age
+      }
+    return current.copy(
+      name = clean,
+      handle = nextHandle,
+      age = nextAge,
+      conditions = parsedConditions,
+      city = session.savedPersonalCity.ifBlank { current.city },
+      bloodGroup = session.savedPersonalBloodGroup.ifBlank { current.bloodGroup },
+      bio = nextBio,
+    )
+  }
+
   fun enterDemoMode() {
+    resetDemoDataInternal()
+    _uiState.update { state ->
+      state.copy(
+        session =
+          state.session.copy(
+            isAuthenticated = true,
+            isDemoMode = true,
+            displayName = DemoSeedData.patient.name,
+            email = "sunita.demo@sehatsaathi.local",
+          ),
+        patient = DemoSeedData.patient,
+        alerts = DemoSeedData.alerts,
+        toastMessage = "Demo mode active with seeded patient Sunita Devi.",
+      )
+    }
     viewModelScope.launch {
       repository.startDemoSession()
-      resetDemoDataInternal()
-      _uiState.update {
-        it.copy(toastMessage = "Demo mode active with seeded patient Sunita Devi.")
+    }
+  }
+
+  fun switchToDemoAccount() {
+    enterDemoMode()
+  }
+
+  fun switchToPersonalAccount() {
+    val currentSession = _uiState.value.session
+    if (currentSession.hasSavedPersonalAccount) {
+      val personalName = currentSession.savedPersonalName.trim()
+      val personalEmail =
+        currentSession.savedPersonalEmail.trim().ifEmpty {
+          val slug =
+            personalName.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), ".").trim('.').ifEmpty { "patient" }
+          "$slug@sehatsaathi.app"
+        }
+      val nextSession =
+        currentSession.copy(
+          isAuthenticated = true,
+          isDemoMode = false,
+          displayName = personalName,
+          email = personalEmail,
+        )
+      _uiState.update { state ->
+        val syncedPatient = buildSyncedPatientForSession(nextSession, state.patient)
+        val syncedAlerts =
+          state.alerts.map { a ->
+            a.copy(
+              message = a.message.replace("Sunita Devi", personalName, ignoreCase = true),
+              isDemo = false,
+            )
+          }
+        state.copy(
+          session = nextSession,
+          patient = syncedPatient,
+          alerts = syncedAlerts,
+          toastMessage = "Switched to $personalName's personal account.",
+        )
       }
+      viewModelScope.launch {
+        repository.switchToSavedPersonalSession()
+      }
+    } else {
+      logoutAndGoToSignUp()
+    }
+  }
+
+  fun logoutAndGoToSignUp() {
+    resetDemoDataInternal()
+    _uiState.update { state ->
+      state.copy(
+        session = state.session.copy(isAuthenticated = false, isDemoMode = false),
+        pendingPublicNavigationRoute = AppRoutes.SIGN_UP,
+        toastMessage = "Logged out of Demo Mode. Create your personal account below.",
+      )
+    }
+    viewModelScope.launch {
+      repository.logoutSessionOnly()
+    }
+  }
+
+  fun logoutAndGoToLogin() {
+    resetDemoDataInternal()
+    _uiState.update { state ->
+      state.copy(
+        session = state.session.copy(isAuthenticated = false, isDemoMode = false),
+        pendingPublicNavigationRoute = AppRoutes.LOG_IN,
+        toastMessage = "Signed out. Log in to your account or switch to Demo Mode anytime.",
+      )
+    }
+    viewModelScope.launch {
+      repository.logoutSessionOnly()
     }
   }
 
@@ -316,6 +430,10 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
 
   fun consumePendingDemoNavigation() {
     _uiState.update { it.copy(pendingDemoNavigationRoute = null) }
+  }
+
+  fun consumePendingPublicNavigation() {
+    _uiState.update { it.copy(pendingPublicNavigationRoute = null) }
   }
 
   fun launchDemoScenarioFromLanding(scenario: DemoScenario) {
@@ -530,33 +648,110 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
     if (!AuthSessionRepository.isValidEmail(email) || password.length < 10) {
       return "Incorrect email or password."
     }
-    val derivedName =
-      email.substringBefore("@").replace(".", " ").replaceFirstChar { it.uppercase() }
-    viewModelScope.launch {
-      repository.startLocalAccountSession(name = derivedName, email = email)
-      _uiState.update {
-        it.copy(toastMessage = "Signed in (Demo mode session with sample data).")
+    val cleanEmail = email.trim().lowercase()
+    val currentSession = _uiState.value.session
+    val resolvedName =
+      if (
+        currentSession.hasSavedPersonalAccount &&
+          (cleanEmail == currentSession.savedPersonalEmail.lowercase() ||
+            !cleanEmail.equals("sunita.demo@sehatsaathi.local", ignoreCase = true))
+      ) {
+        currentSession.savedPersonalName.ifBlank {
+          cleanEmail
+            .substringBefore("@")
+            .split(".", "_", "-")
+            .filter { it.isNotBlank() }
+            .joinToString(" ") { part -> part.replaceFirstChar { it.uppercase() } }
+            .ifBlank { "Patient" }
+        }
+      } else {
+        cleanEmail
+          .substringBefore("@")
+          .split(".", "_", "-")
+          .filter { it.isNotBlank() }
+          .joinToString(" ") { part -> part.replaceFirstChar { it.uppercase() } }
+          .ifBlank { "Patient" }
       }
+    val nextSession =
+      currentSession.copy(
+        isAuthenticated = true,
+        isDemoMode = false,
+        displayName = resolvedName,
+        email = cleanEmail,
+        savedPersonalName = resolvedName,
+        savedPersonalEmail = cleanEmail,
+      )
+    _uiState.update { state ->
+      val syncedPatient = buildSyncedPatientForSession(nextSession, state.patient)
+      state.copy(
+        session = nextSession,
+        patient = syncedPatient,
+        toastMessage = "Welcome back, $resolvedName!",
+      )
+    }
+    viewModelScope.launch {
+      repository.startLocalAccountSession(name = resolvedName, email = cleanEmail)
     }
     return null
   }
 
+  fun quickSignInSavedPersonalAccount() {
+    switchToPersonalAccount()
+  }
+
   fun signUpDemoLocal(name: String, email: String, password: String): String? {
-    if (name.trim().length < 2) {
+    val cleanName = ProfileDomain.sanitizeText(name, ProfileDomain.MAX_NAME_LENGTH)
+    if (cleanName.length < 2) {
       return "Please enter your full name."
     }
-    if (!AuthSessionRepository.isValidEmail(email)) {
+    val cleanEmail = email.trim().lowercase()
+    if (!AuthSessionRepository.isValidEmail(cleanEmail)) {
       return "Please enter a valid email address."
     }
     val strength = AuthSessionRepository.evaluatePassword(password)
     if (!strength.isValid) {
       return "Please choose a stronger password that meets all checklist items."
     }
+    val slug =
+      cleanName.lowercase(Locale.US).replace(Regex("[^a-z0-9]+"), ".").trim('.').ifEmpty { "patient" }
+    val personalBio = "Personal daily vitals, medication schedule, and family care profile for $cleanName."
+    val nextSession =
+      _uiState.value.session.copy(
+        isAuthenticated = true,
+        isDemoMode = false,
+        displayName = cleanName,
+        email = cleanEmail,
+        savedPersonalName = cleanName,
+        savedPersonalEmail = cleanEmail,
+        savedPersonalBio = personalBio,
+      )
+    _uiState.update { state ->
+      val syncedPatient =
+        buildSyncedPatientForSession(nextSession, state.patient).copy(
+          name = cleanName,
+          handle = slug,
+          bio = personalBio,
+        )
+      val syncedAlerts =
+        state.alerts.map { a ->
+          a.copy(
+            message = a.message.replace("Sunita Devi", cleanName, ignoreCase = true),
+            isDemo = false,
+          )
+        }
+      state.copy(
+        session = nextSession,
+        patient = syncedPatient,
+        alerts = syncedAlerts,
+        toastMessage = "Welcome, $cleanName! Your personal account is ready.",
+      )
+    }
     viewModelScope.launch {
-      repository.startLocalAccountSession(name = name, email = email)
-      _uiState.update {
-        it.copy(toastMessage = "Account created in Demo mode with sample schedule.")
-      }
+      repository.startLocalAccountSession(
+        name = cleanName,
+        email = cleanEmail,
+        bio = personalBio,
+      )
     }
     return null
   }
@@ -1579,6 +1774,21 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
             displayName = cleanedName,
             email = nextEmail,
             isDemoMode = nextDemoMode,
+            savedPersonalName =
+              if (!nextDemoMode) cleanedName else state.session.savedPersonalName,
+            savedPersonalEmail =
+              if (!nextDemoMode) nextEmail else state.session.savedPersonalEmail,
+            savedPersonalAge =
+              if (!nextDemoMode) finalPatient.age else state.session.savedPersonalAge,
+            savedPersonalConditions =
+              if (!nextDemoMode) finalPatient.conditions.joinToString(", ")
+              else state.session.savedPersonalConditions,
+            savedPersonalCity =
+              if (!nextDemoMode) finalPatient.city else state.session.savedPersonalCity,
+            savedPersonalBloodGroup =
+              if (!nextDemoMode) finalPatient.bloodGroup else state.session.savedPersonalBloodGroup,
+            savedPersonalBio =
+              if (!nextDemoMode) finalPatient.bio else state.session.savedPersonalBio,
           ),
         patient = finalPatient,
         reminderPrefs = updatedReminders ?: state.reminderPrefs,
@@ -1593,6 +1803,11 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
         name = cleanedName,
         email = persistedEmail,
         isDemoMode = persistedDemoMode,
+        age = finalPatient.age,
+        conditionsCsv = finalPatient.conditions.joinToString(", "),
+        city = finalPatient.city,
+        bloodGroup = finalPatient.bloodGroup,
+        bio = finalPatient.bio,
       )
     }
   }
@@ -1949,14 +2164,18 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
 
   fun logout() {
     resetDemoDataInternal()
-    _uiState.update {
-      it.copy(
-        session = AuthSession(),
-        toastMessage = "Signed out and cleared local session data.",
+    _uiState.update { state ->
+      state.copy(
+        session =
+          state.session.copy(
+            isAuthenticated = false,
+            isDemoMode = false,
+          ),
+        toastMessage = "Signed out. You can log back in, create a new account, or switch to Demo Mode anytime.",
       )
     }
     viewModelScope.launch {
-      repository.clearSession()
+      repository.logoutSessionOnly()
     }
   }
 

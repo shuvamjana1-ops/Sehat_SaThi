@@ -348,4 +348,40 @@ class ProfileFeatureTest {
     composeRule.onNodeWithTag("account_scroll").performScrollToIndex(4)
     composeRule.onNodeWithTag("who_can_see_what_banner").assertExists()
   }
+
+  @Test
+  fun viewModel_supportsDemoLogoutPersonalSignupAndSeamlessAccountSwitching() {
+    val app = ApplicationProvider.getApplicationContext<Application>()
+    val vm = SehatSaathiViewModel(app)
+    vm.enterDemoMode()
+    assertTrue(vm.uiState.value.session.isDemoMode)
+    assertEquals("Sunita Devi", vm.uiState.value.patient.name)
+
+    // 1. Log out from Demo Mode to create a personal account
+    vm.logoutAndGoToSignUp()
+    assertFalse(vm.uiState.value.session.isAuthenticated)
+    assertFalse(vm.uiState.value.session.isDemoMode)
+    assertEquals("sign_up", vm.uiState.value.pendingPublicNavigationRoute)
+
+    // 2. Create personal account
+    val signUpErr = vm.signUpDemoLocal("Shuvam Jana", "shuvam@sehatsaathi.app", "SehatPass2026")
+    assertNull(signUpErr)
+    assertTrue(vm.uiState.value.session.isAuthenticated)
+    assertFalse(vm.uiState.value.session.isDemoMode)
+    assertEquals("Shuvam Jana", vm.uiState.value.patient.name)
+    assertEquals("shuvam.jana", vm.uiState.value.patient.handle)
+    assertTrue(vm.uiState.value.session.hasSavedPersonalAccount)
+
+    // 3. Switch back to Demo Account (Sunita Devi) whenever Demo is needed
+    vm.switchToDemoAccount()
+    assertTrue(vm.uiState.value.session.isDemoMode)
+    assertEquals("Sunita Devi", vm.uiState.value.patient.name)
+    assertTrue(vm.uiState.value.session.hasSavedPersonalAccount)
+
+    // 4. Switch back to Personal Account with 1 tap
+    vm.switchToPersonalAccount()
+    assertFalse(vm.uiState.value.session.isDemoMode)
+    assertEquals("Shuvam Jana", vm.uiState.value.patient.name)
+    assertEquals("shuvam@sehatsaathi.app", vm.uiState.value.session.email)
+  }
 }

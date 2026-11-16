@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DocumentScanner
@@ -33,6 +34,8 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Medication
 import androidx.compose.material.icons.filled.MonitorHeart
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -99,6 +102,10 @@ fun DashboardScreen(
   onResetDemo: () -> Unit = {},
   onReplayTour: () -> Unit = {},
   onSetSimpleMode: (Boolean) -> Unit = {},
+  onSwitchToDemoAccount: () -> Unit = {},
+  onSwitchToPersonalAccount: () -> Unit = {},
+  onLogoutToCreateAccount: () -> Unit = {},
+  onLogoutToLogin: () -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
   val c = SehatPalette.current
@@ -331,13 +338,65 @@ fun DashboardScreen(
               border = GlassTokens.borderStroke(c.hairlineBorder, isDark = c.isDark),
               modifier = Modifier.fillMaxWidth(),
             ) {
-              Text(
-                text =
-                  "Sample data for demonstration only. Verify medicine details with an official source before real use.",
-                style = MaterialTheme.typography.labelMedium,
-                color = c.deepOcean,
+              Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-              )
+              ) {
+                Text(
+                  text =
+                    if (uiState.session.isDemoMode) {
+                      "Sample data for demonstration only (Sunita Devi). You can log out to create your own personal account or switch back to Demo Mode anytime."
+                    } else {
+                      "Logged in as ${uiState.patient.name} (Personal Account). Verify medicine details with your doctor or pharmacist."
+                    },
+                  style = MaterialTheme.typography.labelMedium,
+                  color = c.deepOcean,
+                )
+                FlowRow(
+                  horizontalArrangement = Arrangement.spacedBy(8.dp),
+                  verticalArrangement = Arrangement.spacedBy(8.dp),
+                  modifier = Modifier.fillMaxWidth(),
+                ) {
+                  if (uiState.session.isDemoMode) {
+                    if (uiState.session.hasSavedPersonalAccount) {
+                      SehatPrimaryButton(
+                        text = "Switch to ${uiState.session.savedPersonalName}",
+                        icon = Icons.Filled.Person,
+                        onClick = onSwitchToPersonalAccount,
+                        testTag = "dash_switch_personal_btn",
+                      )
+                    }
+                    SehatPrimaryButton(
+                      text = "Create My Account",
+                      icon = Icons.Filled.Add,
+                      onClick = onLogoutToCreateAccount,
+                      testTag = "dash_create_account_btn",
+                    )
+                    SehatSecondaryButton(
+                      text = "Log Out / Sign In",
+                      icon = Icons.AutoMirrored.Filled.Logout,
+                      minHeight = 48.dp,
+                      onClick = onLogoutToLogin,
+                      testTag = "dash_logout_btn",
+                    )
+                  } else {
+                    SehatSecondaryButton(
+                      text = "Switch to Demo (Sunita Devi)",
+                      icon = Icons.Filled.Refresh,
+                      minHeight = 48.dp,
+                      onClick = onSwitchToDemoAccount,
+                      testTag = "dash_switch_demo_btn",
+                    )
+                    SehatSecondaryButton(
+                      text = "Log Out",
+                      icon = Icons.AutoMirrored.Filled.Logout,
+                      minHeight = 48.dp,
+                      onClick = onLogoutToLogin,
+                      testTag = "dash_logout_btn",
+                    )
+                  }
+                }
+              }
             }
           }
         }

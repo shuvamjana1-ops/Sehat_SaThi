@@ -201,6 +201,10 @@ fun AccountScreen(
   onDeleteAccount: (confirmationText: String) -> Boolean,
   onResetDemoData: () -> Unit,
   onLogout: () -> Unit,
+  onSwitchToDemoAccount: () -> Unit = {},
+  onSwitchToPersonalAccount: () -> Unit = {},
+  onLogoutToCreateAccount: () -> Unit = onLogout,
+  onLogoutToLogin: () -> Unit = onLogout,
   onToggleOfflineSimulation: (Boolean) -> Unit,
   onSyncOfflineQueue: () -> Unit,
   onShowToast: (String) -> Unit,
@@ -337,6 +341,8 @@ fun AccountScreen(
             patient = uiState.patient,
             email = uiState.session.email,
             isDemoMode = uiState.session.isDemoMode,
+            hasSavedPersonalAccount = uiState.session.hasSavedPersonalAccount,
+            savedPersonalName = uiState.session.savedPersonalName,
             isDesktop = true,
             avatarBitmap = uiState.avatarBitmap,
             coverBitmap = uiState.coverBitmap,
@@ -351,6 +357,10 @@ fun AccountScreen(
             onInlineEditBio = { openEditSheet(ProfileEditFocusField.BIO) },
             onOpenEditProfile = { openEditSheet(null) },
             onOpenCareCard = { careCardDialogOpen = true },
+            onSwitchToDemoAccount = onSwitchToDemoAccount,
+            onSwitchToPersonalAccount = onSwitchToPersonalAccount,
+            onLogoutToCreateAccount = onLogoutToCreateAccount,
+            onLogoutToLogin = onLogoutToLogin,
             onStatReadingsClick = { onNavigate(AppRoutes.TRENDS) },
             onStatStreakClick = { onNavigate(AppRoutes.LOG_READING) },
             onStatAdherenceClick = { onNavigate(AppRoutes.MEDICINES) },
@@ -437,6 +447,8 @@ fun AccountScreen(
             patient = uiState.patient,
             email = uiState.session.email,
             isDemoMode = uiState.session.isDemoMode,
+            hasSavedPersonalAccount = uiState.session.hasSavedPersonalAccount,
+            savedPersonalName = uiState.session.savedPersonalName,
             isDesktop = false,
             avatarBitmap = uiState.avatarBitmap,
             coverBitmap = uiState.coverBitmap,
@@ -451,6 +463,10 @@ fun AccountScreen(
             onInlineEditBio = { openEditSheet(ProfileEditFocusField.BIO) },
             onOpenEditProfile = { openEditSheet(null) },
             onOpenCareCard = { careCardDialogOpen = true },
+            onSwitchToDemoAccount = onSwitchToDemoAccount,
+            onSwitchToPersonalAccount = onSwitchToPersonalAccount,
+            onLogoutToCreateAccount = onLogoutToCreateAccount,
+            onLogoutToLogin = onLogoutToLogin,
             onStatReadingsClick = { onNavigate(AppRoutes.TRENDS) },
             onStatStreakClick = { onNavigate(AppRoutes.LOG_READING) },
             onStatAdherenceClick = { onNavigate(AppRoutes.MEDICINES) },
@@ -679,6 +695,8 @@ private fun ProfileHeaderHeroCard(
   patient: PatientProfile,
   email: String,
   isDemoMode: Boolean,
+  hasSavedPersonalAccount: Boolean = false,
+  savedPersonalName: String = "",
   isDesktop: Boolean,
   avatarBitmap: android.graphics.Bitmap?,
   coverBitmap: android.graphics.Bitmap?,
@@ -693,6 +711,10 @@ private fun ProfileHeaderHeroCard(
   onInlineEditBio: () -> Unit,
   onOpenEditProfile: () -> Unit,
   onOpenCareCard: () -> Unit,
+  onSwitchToDemoAccount: () -> Unit = {},
+  onSwitchToPersonalAccount: () -> Unit = {},
+  onLogoutToCreateAccount: () -> Unit = {},
+  onLogoutToLogin: () -> Unit = {},
   onStatReadingsClick: () -> Unit,
   onStatStreakClick: () -> Unit,
   onStatAdherenceClick: () -> Unit,
@@ -990,6 +1012,118 @@ private fun ProfileHeaderHeroCard(
               modifier = Modifier.weight(1f),
               testTag = "open_care_card_btn",
             )
+          }
+        }
+      }
+
+      // Account & Demo Mode Switcher + Quick Log Out Panel
+      Surface(
+        shape = CardShape,
+        color = c.mistSoft,
+        border = BorderStroke(1.dp, c.hairlineBorder),
+        modifier = Modifier.fillMaxWidth().testTag("profile_account_switcher_card"),
+      ) {
+        Column(
+          verticalArrangement = Arrangement.spacedBy(10.dp),
+          modifier = Modifier.padding(14.dp).fillMaxWidth(),
+        ) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(8.dp),
+              modifier = Modifier.weight(1f).padding(end = 8.dp),
+            ) {
+              Icon(
+                imageVector = Icons.Filled.Person,
+                contentDescription = null,
+                tint = c.clinicalBlueAccent,
+                modifier = Modifier.size(20.dp),
+              )
+              Column(modifier = Modifier.weight(1f)) {
+                Text(
+                  text =
+                    if (isDemoMode) "Active: Demo Account (Sunita Devi)"
+                    else "Active: Personal Account (${patient.name})",
+                  style = MaterialTheme.typography.titleMedium,
+                  color = c.deepOcean,
+                )
+                Text(
+                  text =
+                    if (isDemoMode) {
+                      if (hasSavedPersonalAccount) {
+                        "Switch back to $savedPersonalName's account, create a new account, or log out."
+                      } else {
+                        "Log out of Demo Mode to create your own personal account or sign in."
+                      }
+                    } else {
+                      "Switch to the Demo Account (Sunita Devi) anytime for testing, or log out."
+                    },
+                  style = MaterialTheme.typography.bodySmall,
+                  color = c.inkSecondary,
+                )
+              }
+            }
+            if (isDemoMode) {
+              DemoPillBadge(text = "Demo Mode")
+            } else {
+              StatusChip(level = HealthStatusLevel.NORMAL, label = "Personal")
+            }
+          }
+
+          FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            if (isDemoMode) {
+              if (hasSavedPersonalAccount) {
+                SehatPrimaryButton(
+                  text = "Switch to $savedPersonalName",
+                  icon = Icons.Filled.Person,
+                  onClick = onSwitchToPersonalAccount,
+                  testTag = "switch_to_personal_btn",
+                )
+              }
+              SehatPrimaryButton(
+                text = "Create My Account",
+                icon = Icons.Filled.Add,
+                onClick = onLogoutToCreateAccount,
+                testTag = "logout_to_create_account_btn",
+              )
+              SehatSecondaryButton(
+                text = "Log Out / Sign In",
+                icon = Icons.AutoMirrored.Filled.Logout,
+                minHeight = 52.dp,
+                onClick = onLogoutToLogin,
+                testTag = "hero_logout_btn",
+              )
+            } else {
+              SehatSecondaryButton(
+                text = "Switch to Demo (Sunita Devi)",
+                icon = Icons.Filled.Refresh,
+                minHeight = 52.dp,
+                onClick = onSwitchToDemoAccount,
+                testTag = "switch_to_demo_btn",
+              )
+              SehatSecondaryButton(
+                text = "Create New Account",
+                icon = Icons.Filled.Add,
+                minHeight = 52.dp,
+                onClick = onLogoutToCreateAccount,
+                testTag = "logout_to_create_account_btn",
+              )
+              SehatSecondaryButton(
+                text = "Log Out",
+                icon = Icons.AutoMirrored.Filled.Logout,
+                minHeight = 52.dp,
+                onClick = onLogoutToLogin,
+                testTag = "hero_logout_btn",
+              )
+            }
           }
         }
       }

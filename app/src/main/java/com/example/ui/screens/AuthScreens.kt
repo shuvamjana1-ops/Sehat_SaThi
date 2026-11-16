@@ -76,24 +76,75 @@ fun LogInScreen(
   onGoToSignUp: () -> Unit,
   onGoToForgotPassword: () -> Unit,
   onTryDemo: () -> Unit,
+  savedPersonalName: String = "",
+  savedPersonalEmail: String = "",
+  onContinueAsSavedPersonal: () -> Unit = {},
   onHomeClick: () -> Unit = onBack,
   onOpenInfo: (InfoSection) -> Unit = {},
   modifier: Modifier = Modifier,
 ) {
-  var email by remember { mutableStateOf("") }
+  var email by remember(savedPersonalEmail) { mutableStateOf(savedPersonalEmail) }
   var password by remember { mutableStateOf("") }
   var passwordVisible by remember { mutableStateOf(false) }
   var errorMsg by remember { mutableStateOf<String?>(null) }
+  val c = SehatPalette.current
 
   AuthScaffold(
     title = "Log in to SehatSaathi",
-    subtitle = "Welcome back. Enter your email and password, or explore Demo mode right away.",
+    subtitle = "Sign in to your personal health profile, or switch to the Demo Account (Sunita Devi) anytime.",
     onBack = onBack,
     onHomeClick = onHomeClick,
     onOpenInfo = onOpenInfo,
     modifier = modifier,
   ) {
     DemoAccountBanner()
+
+    if (savedPersonalName.isNotBlank() && !savedPersonalName.equals("Sunita Devi", ignoreCase = true)) {
+      Surface(
+        shape = CardShape,
+        color = c.mistSoft,
+        border = BorderStroke(1.5.dp, c.clinicalBlueAccent),
+        modifier = Modifier.fillMaxWidth().testTag("saved_personal_account_card"),
+      ) {
+        Column(
+          verticalArrangement = Arrangement.spacedBy(10.dp),
+          modifier = Modifier.padding(14.dp).fillMaxWidth(),
+        ) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Column(modifier = Modifier.weight(1f).padding(end = 8.dp)) {
+              Text(
+                text = "Saved Personal Account",
+                style = MaterialTheme.typography.labelMedium,
+                color = c.clinicalBlueAccent,
+              )
+              Text(
+                text = savedPersonalName,
+                style = MaterialTheme.typography.titleLarge,
+                color = c.deepOcean,
+              )
+              if (savedPersonalEmail.isNotBlank()) {
+                Text(
+                  text = savedPersonalEmail,
+                  style = MaterialTheme.typography.bodySmall,
+                  color = c.inkSecondary,
+                )
+              }
+            }
+            StatusChip(level = HealthStatusLevel.NORMAL, label = "Ready")
+          }
+          SehatPrimaryButton(
+            text = "Continue as $savedPersonalName",
+            onClick = onContinueAsSavedPersonal,
+            modifier = Modifier.fillMaxWidth(),
+            testTag = "continue_saved_personal_btn",
+          )
+        }
+      }
+    }
 
     if (errorMsg != null) {
       AuthErrorBox(message = errorMsg!!)
@@ -106,7 +157,7 @@ fun LogInScreen(
         email = it
         errorMsg = null
       },
-      placeholder = "e.g. sunita@mail.com",
+      placeholder = "e.g. your.name@email.com",
       keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
       testTag = "login_email_input",
     )
@@ -136,14 +187,14 @@ fun LogInScreen(
     }
 
     SehatPrimaryButton(
-      text = "Log in",
+      text = "Log in to Personal Account",
       onClick = { errorMsg = onLoginSubmit(email, password) },
       modifier = Modifier.fillMaxWidth(),
       testTag = "login_submit_btn",
     )
 
     SehatSecondaryButton(
-      text = "Try Demo mode (Sunita Devi)",
+      text = "Switch to Demo Account (Sunita Devi)",
       onClick = onTryDemo,
       minHeight = 56.dp,
       modifier = Modifier.fillMaxWidth(),

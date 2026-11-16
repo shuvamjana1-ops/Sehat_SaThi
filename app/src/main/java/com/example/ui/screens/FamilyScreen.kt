@@ -32,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -60,7 +62,9 @@ import com.example.ui.components.StatusChip
 import com.example.ui.components.launchSafeDialer
 import com.example.ui.components.rememberPrefersReducedMotion
 import com.example.ui.components.sehatScroll3DKeyed
+import com.example.ui.theme.ButtonShape
 import com.example.ui.theme.CardShape
+import com.example.ui.theme.PureWhite
 import com.example.ui.theme.SehatPalette
 import com.example.ui.theme.tabular
 
@@ -97,8 +101,15 @@ fun FamilyAlertsScreen(
     item(key = "family_header") {
       Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         Icon(Icons.Filled.Groups, contentDescription = null, tint = c.deepOcean)
-        Text("Family & Caregiver Hub", style = MaterialTheme.typography.headlineLarge, color = c.deepOcean)
-        DemoPillBadge(text = "Demo")
+        Text(
+          "Family & Caregiver Hub",
+          style = MaterialTheme.typography.headlineLarge,
+          color = c.deepOcean,
+          modifier = Modifier.weight(1f, fill = false),
+        )
+        if (uiState.session.isDemoMode) {
+          DemoPillBadge(text = "Demo")
+        }
       }
       Spacer(modifier = Modifier.height(4.dp))
       Text(
@@ -108,43 +119,142 @@ fun FamilyAlertsScreen(
       )
     }
 
-    // Role switcher toggle
+    // Role switcher toggle (fixed layout for both Patient View & Caregiver View)
     item(key = "role_switcher") {
       Surface(
+        onClick = { onSetCaregiverViewMode(!uiState.caregiverViewMode) },
         shape = CardShape,
         color = c.surface,
-        border = BorderStroke(1.dp, c.hairlineBorder),
-        modifier = Modifier.fillMaxWidth(),
+        border = BorderStroke(1.5.dp, if (uiState.caregiverViewMode) c.clinicalBlueAccent else c.hairlineBorder),
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .sehatScroll3DKeyed(listState, "role_switcher", reducedMotion),
       ) {
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.SpaceBetween,
+        Column(
+          verticalArrangement = Arrangement.spacedBy(10.dp),
           modifier = Modifier.padding(14.dp).fillMaxWidth(),
         ) {
-          Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(
-              if (uiState.caregiverViewMode) Icons.Filled.SupervisorAccount else Icons.Filled.Person,
-              contentDescription = null,
-              tint = c.clinicalBlueAccent,
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
+              horizontalArrangement = Arrangement.spacedBy(10.dp),
+              modifier = Modifier.weight(1f).padding(end = 12.dp),
+            ) {
+              Icon(
+                if (uiState.caregiverViewMode) Icons.Filled.SupervisorAccount else Icons.Filled.Person,
+                contentDescription = null,
+                tint = c.clinicalBlueAccent,
+              )
+              Column(modifier = Modifier.weight(1f)) {
+                Text(
+                  if (uiState.caregiverViewMode) "Caregiver Dashboard Role" else "Patient View Role",
+                  style = MaterialTheme.typography.titleMedium,
+                  color = c.deepOcean,
+                )
+                Text(
+                  if (uiState.caregiverViewMode) {
+                    "Viewing linked patient summaries & alerts"
+                  } else {
+                    "Switch to Caregiver view to review linked patient cards"
+                  },
+                  style = MaterialTheme.typography.bodySmall,
+                  color = c.inkSecondary,
+                )
+              }
+            }
+            Switch(
+              checked = uiState.caregiverViewMode,
+              onCheckedChange = onSetCaregiverViewMode,
+              colors =
+                SwitchDefaults.colors(
+                  checkedThumbColor = PureWhite,
+                  checkedTrackColor = c.clinicalBlue,
+                  checkedBorderColor = c.clinicalBlueAccent,
+                  uncheckedThumbColor = c.deepOcean,
+                  uncheckedTrackColor = c.mistSoft,
+                  uncheckedBorderColor = c.clinicalBlueAccent,
+                ),
+              modifier = Modifier.testTag("caregiver_view_toggle"),
             )
-            Column {
-              Text(
-                if (uiState.caregiverViewMode) "Caregiver Dashboard Role" else "Patient View Role",
-                style = MaterialTheme.typography.titleMedium,
-                color = c.deepOcean,
-              )
-              Text(
-                if (uiState.caregiverViewMode) "Viewing linked patient summaries & alerts" else "Switch to Caregiver view to review linked patient cards",
-                style = MaterialTheme.typography.bodySmall,
-                color = c.inkSecondary,
-              )
+          }
+
+          // Clear dual-role pill selector so users can also tap either role directly
+          Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth(),
+          ) {
+            Surface(
+              onClick = { onSetCaregiverViewMode(false) },
+              shape = ButtonShape,
+              color = if (!uiState.caregiverViewMode) c.clinicalBlue else c.mistSoft,
+              border =
+                BorderStroke(
+                  1.dp,
+                  if (!uiState.caregiverViewMode) c.clinicalBlueAccent else c.hairlineBorder,
+                ),
+              modifier =
+                Modifier
+                  .weight(1f)
+                  .defaultMinSize(minHeight = 48.dp)
+                  .testTag("role_pill_patient"),
+            ) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+              ) {
+                Icon(
+                  Icons.Filled.Person,
+                  contentDescription = null,
+                  tint = if (!uiState.caregiverViewMode) PureWhite else c.deepOcean,
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 3.dp))
+                Text(
+                  "Patient View",
+                  style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                  color = if (!uiState.caregiverViewMode) PureWhite else c.deepOcean,
+                )
+              }
+            }
+            Surface(
+              onClick = { onSetCaregiverViewMode(true) },
+              shape = ButtonShape,
+              color = if (uiState.caregiverViewMode) c.clinicalBlue else c.mistSoft,
+              border =
+                BorderStroke(
+                  1.dp,
+                  if (uiState.caregiverViewMode) c.clinicalBlueAccent else c.hairlineBorder,
+                ),
+              modifier =
+                Modifier
+                  .weight(1f)
+                  .defaultMinSize(minHeight = 48.dp)
+                  .testTag("role_pill_caregiver"),
+            ) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+              ) {
+                Icon(
+                  Icons.Filled.SupervisorAccount,
+                  contentDescription = null,
+                  tint = if (uiState.caregiverViewMode) PureWhite else c.deepOcean,
+                )
+                Spacer(modifier = Modifier.padding(horizontal = 3.dp))
+                Text(
+                  "Caregiver View",
+                  style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                  color = if (uiState.caregiverViewMode) PureWhite else c.deepOcean,
+                )
+              }
             }
           }
-          Switch(
-            checked = uiState.caregiverViewMode,
-            onCheckedChange = onSetCaregiverViewMode,
-            modifier = Modifier.testTag("caregiver_view_toggle"),
-          )
         }
       }
     }
@@ -162,7 +272,10 @@ fun FamilyAlertsScreen(
         val refillGaps = uiState.medicines.count { it.daysLeft <= 5 }
         val statusLevel = if ((lastReading?.glucoseMgDl ?: 130) < 70 || (lastReading?.glucoseMgDl ?: 130) > 200) HealthStatusLevel.URGENT else HealthStatusLevel.NORMAL
 
-        SehatCard(containerColor = c.surface) {
+        SehatCard(
+          containerColor = c.surface,
+          modifier = Modifier.sehatScroll3DKeyed(listState, "linked_patient_card", reducedMotion),
+        ) {
           Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -224,14 +337,24 @@ fun FamilyAlertsScreen(
           optedIn = uiState.weeklyDigestOptedIn,
         )
 
-        SehatCard(containerColor = c.mistSoft) {
+        SehatCard(
+          containerColor = c.mistSoft,
+          modifier = Modifier.sehatScroll3DKeyed(listState, "weekly_digest_preview", reducedMotion),
+        ) {
           Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth(),
           ) {
-            Text("Weekly Caregiver Digest (Demo)", style = MaterialTheme.typography.titleMedium, color = c.deepOcean)
-            DemoPillBadge(text = "Demo")
+            Text(
+              "Weekly Caregiver Digest",
+              style = MaterialTheme.typography.titleMedium,
+              color = c.deepOcean,
+              modifier = Modifier.weight(1f),
+            )
+            if (uiState.session.isDemoMode) {
+              DemoPillBadge(text = "Demo")
+            }
           }
           Spacer(modifier = Modifier.height(6.dp))
           Text(digest.generatedSummaryText, style = MaterialTheme.typography.bodyMedium, color = c.ink)
@@ -241,10 +364,24 @@ fun FamilyAlertsScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth(),
           ) {
-            Text("Receive weekly summary via SMS/WhatsApp", style = MaterialTheme.typography.bodySmall, color = c.inkSecondary)
+            Text(
+              "Receive weekly summary via SMS/WhatsApp",
+              style = MaterialTheme.typography.bodySmall,
+              color = c.inkSecondary,
+              modifier = Modifier.weight(1f).padding(end = 12.dp),
+            )
             Switch(
               checked = uiState.weeklyDigestOptedIn,
               onCheckedChange = onToggleWeeklyDigestOptIn,
+              colors =
+                SwitchDefaults.colors(
+                  checkedThumbColor = PureWhite,
+                  checkedTrackColor = c.clinicalBlue,
+                  checkedBorderColor = c.clinicalBlueAccent,
+                  uncheckedThumbColor = c.deepOcean,
+                  uncheckedTrackColor = c.surface,
+                  uncheckedBorderColor = c.clinicalBlueAccent,
+                ),
               modifier = Modifier.testTag("digest_opt_in_switch"),
             )
           }

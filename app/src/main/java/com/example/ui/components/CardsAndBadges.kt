@@ -44,6 +44,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerType
@@ -96,12 +97,39 @@ fun SehatCard(
   val pressed by interactionSource.collectIsPressedAsState()
   val pressScale by
     animateFloatAsState(
-      targetValue = if (onClick != null && pressed && !reducedMotion) 0.97f else 1f,
-      animationSpec = tween(durationMillis = 150),
+      targetValue = if (onClick != null && pressed && !reducedMotion) 0.955f else 1f,
+      animationSpec =
+        androidx.compose.animation.core.spring(
+          dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
+          stiffness = androidx.compose.animation.core.Spring.StiffnessMedium,
+        ),
       label = "card_press_scale",
     )
+  val pressTiltX by
+    animateFloatAsState(
+      targetValue = if (onClick != null && pressed && !reducedMotion) -5.5f else 0f,
+      animationSpec =
+        androidx.compose.animation.core.spring(
+          dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
+          stiffness = androidx.compose.animation.core.Spring.StiffnessMedium,
+        ),
+      label = "card_press_tilt_x",
+    )
+  val morphedCorner by
+    androidx.compose.animation.core.animateDpAsState(
+      targetValue =
+        if (onClick != null && pressed && !reducedMotion) 28.dp
+        else if (useGlass) GlassTokens.GlassRadius
+        else 20.dp,
+      animationSpec =
+        androidx.compose.animation.core.spring(
+          dampingRatio = androidx.compose.animation.core.Spring.DampingRatioMediumBouncy,
+          stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow,
+        ),
+      label = "card_morph_corner",
+    )
 
-  val shape = if (useGlass) GlassTokens.GlassCornerShape else CardShape
+  val shape = androidx.compose.foundation.shape.RoundedCornerShape(morphedCorner)
   val effectiveContainer =
     if (useGlass) {
       GlassTokens.cardFill(
@@ -205,7 +233,18 @@ fun SehatCard(
       colors = CardDefaults.cardColors(containerColor = effectiveContainer, contentColor = c.ink),
       border = sculptedBorder,
       elevation = CardDefaults.cardElevation(defaultElevation = 0.dp, pressedElevation = 1.dp),
-      modifier = modifier.scale(pressScale).then(sculptedShadow).then(pointerModifier),
+      modifier =
+        modifier
+          .then(
+            androidx.compose.ui.Modifier.graphicsLayer {
+              scaleX = pressScale
+              scaleY = pressScale
+              rotationX = pressTiltX
+              cameraDistance = 14f * density
+            },
+          )
+          .then(sculptedShadow)
+          .then(pointerModifier),
     ) {
       Column(
         modifier = Modifier.fillMaxWidth().then(sheenOverlay).padding(contentPadding),

@@ -75,9 +75,20 @@ fun SehatSaathiApp(
     )
   val allowedWhenLoggedOut = authOnlyPublicRoutes + setOf(AppRoutes.INFO_ROUTE, AppRoutes.NOT_FOUND)
 
-  LaunchedEffect(uiState.isSessionLoaded, uiState.session.isAuthenticated, currentRoute) {
+  LaunchedEffect(
+    uiState.isSessionLoaded,
+    uiState.session.isAuthenticated,
+    currentRoute,
+    uiState.pendingPublicNavigationRoute,
+  ) {
     if (!uiState.isSessionLoaded) return@LaunchedEffect
-    if (uiState.session.isAuthenticated && currentRoute in authOnlyPublicRoutes) {
+    val pendingPublic = uiState.pendingPublicNavigationRoute
+    if (!uiState.session.isAuthenticated && pendingPublic != null) {
+      viewModel.consumePendingPublicNavigation()
+      navController.navigate(pendingPublic) {
+        popUpTo(0) { inclusive = true }
+      }
+    } else if (uiState.session.isAuthenticated && currentRoute in authOnlyPublicRoutes) {
       navController.navigate(AppRoutes.DASHBOARD) {
         popUpTo(0) { inclusive = true }
       }
@@ -158,6 +169,12 @@ fun SehatSaathiApp(
         onToggleTheme = toggleTheme,
         onNavigate = { route -> navigateInsideShell(navController, route) },
         onOpenEmergency = { viewModel.openEmergencyScreenManually(null) },
+        hasSavedPersonalAccount = uiState.session.hasSavedPersonalAccount,
+        savedPersonalName = uiState.session.savedPersonalName,
+        onSwitchToDemoAccount = viewModel::switchToDemoAccount,
+        onSwitchToPersonalAccount = viewModel::switchToPersonalAccount,
+        onLogoutToCreateAccount = viewModel::logoutAndGoToSignUp,
+        onLogoutToLogin = viewModel::logoutAndGoToLogin,
         content = content,
       )
     }
@@ -183,11 +200,16 @@ fun SehatSaathiApp(
 
         composable(AppRoutes.LOG_IN) {
           LogInScreen(
-            onBack = { navController.popBackStack() },
+            onBack = {
+              if (!navController.popBackStack()) goHomeClearingBackstack()
+            },
             onLoginSubmit = { email, password -> viewModel.signInDemoLocal(email, password) },
             onGoToSignUp = { navController.navigate(AppRoutes.SIGN_UP) },
             onGoToForgotPassword = { navController.navigate(AppRoutes.FORGOT_PASSWORD) },
             onTryDemo = { viewModel.enterDemoMode() },
+            savedPersonalName = uiState.session.savedPersonalName,
+            savedPersonalEmail = uiState.session.savedPersonalEmail,
+            onContinueAsSavedPersonal = viewModel::quickSignInSavedPersonalAccount,
             onHomeClick = { goHomeClearingBackstack() },
             onOpenInfo = { section -> navController.navigate(AppRoutes.infoRoute(section)) },
           )
@@ -195,7 +217,9 @@ fun SehatSaathiApp(
 
         composable(AppRoutes.SIGN_UP) {
           SignUpScreen(
-            onBack = { navController.popBackStack() },
+            onBack = {
+              if (!navController.popBackStack()) goHomeClearingBackstack()
+            },
             onSignUpSubmit = { name, email, password ->
               viewModel.signUpDemoLocal(name, email, password)
             },
@@ -270,6 +294,10 @@ fun SehatSaathiApp(
               onResetDemo = viewModel::resetDemoData,
               onReplayTour = viewModel::replayGuidedTour,
               onSetSimpleMode = viewModel::setSimpleMode,
+              onSwitchToDemoAccount = viewModel::switchToDemoAccount,
+              onSwitchToPersonalAccount = viewModel::switchToPersonalAccount,
+              onLogoutToCreateAccount = viewModel::logoutAndGoToSignUp,
+              onLogoutToLogin = viewModel::logoutAndGoToLogin,
             )
           }
         }
@@ -389,6 +417,10 @@ fun SehatSaathiApp(
               onDeleteAccount = { text -> viewModel.deleteAccountAndAllData(text, context) },
               onResetDemoData = viewModel::resetDemoData,
               onLogout = viewModel::logout,
+              onSwitchToDemoAccount = viewModel::switchToDemoAccount,
+              onSwitchToPersonalAccount = viewModel::switchToPersonalAccount,
+              onLogoutToCreateAccount = viewModel::logoutAndGoToSignUp,
+              onLogoutToLogin = viewModel::logoutAndGoToLogin,
               onToggleOfflineSimulation = viewModel::toggleOfflineSimulation,
               onSyncOfflineQueue = viewModel::syncOfflineQueue,
               onNavigate = { route -> navigateInsideShell(navController, route) },

@@ -31,12 +31,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Groups
@@ -154,6 +156,12 @@ fun SehatAppShell(
   onSyncOfflineQueue: () -> Unit,
   onNavigate: (String) -> Unit,
   onOpenEmergency: () -> Unit = {},
+  hasSavedPersonalAccount: Boolean = false,
+  savedPersonalName: String = "",
+  onSwitchToDemoAccount: () -> Unit = {},
+  onSwitchToPersonalAccount: () -> Unit = {},
+  onLogoutToCreateAccount: () -> Unit = {},
+  onLogoutToLogin: () -> Unit = {},
   modifier: Modifier = Modifier,
   onToggleTheme: (() -> Unit)? = null,
   content: @Composable (PaddingValues) -> Unit,
@@ -232,11 +240,29 @@ fun SehatAppShell(
             MobileDrawerContent(
               currentRoute = currentRoute,
               isDemoMode = isDemoMode,
+              hasSavedPersonalAccount = hasSavedPersonalAccount,
+              savedPersonalName = savedPersonalName,
               reducedTransparency = reducedTransparency,
               destinations = extraCommands,
               onNavigate = { route ->
                 scope.launch { drawerState.close() }
                 onNavigate(route)
+              },
+              onSwitchToDemoAccount = {
+                scope.launch { drawerState.close() }
+                onSwitchToDemoAccount()
+              },
+              onSwitchToPersonalAccount = {
+                scope.launch { drawerState.close() }
+                onSwitchToPersonalAccount()
+              },
+              onLogoutToCreateAccount = {
+                scope.launch { drawerState.close() }
+                onLogoutToCreateAccount()
+              },
+              onLogoutToLogin = {
+                scope.launch { drawerState.close() }
+                onLogoutToLogin()
               },
               onClose = { scope.launch { drawerState.close() } },
             )
@@ -346,9 +372,15 @@ fun SehatAppShell(
 private fun MobileDrawerContent(
   currentRoute: String,
   isDemoMode: Boolean,
+  hasSavedPersonalAccount: Boolean = false,
+  savedPersonalName: String = "",
   reducedTransparency: Boolean,
   destinations: List<ShellDestination>,
   onNavigate: (String) -> Unit,
+  onSwitchToDemoAccount: () -> Unit = {},
+  onSwitchToPersonalAccount: () -> Unit = {},
+  onLogoutToCreateAccount: () -> Unit = {},
+  onLogoutToLogin: () -> Unit = {},
   onClose: () -> Unit,
 ) {
   val c = SehatPalette.current
@@ -472,6 +504,80 @@ private fun MobileDrawerContent(
           modifier = Modifier.defaultMinSize(minHeight = 48.dp),
         )
       }
+
+      HorizontalDivider(color = c.hairlineBorder, modifier = Modifier.padding(vertical = 10.dp))
+
+      Text(
+        text = "Account & Demo Switcher",
+        style = MaterialTheme.typography.labelMedium,
+        color = c.inkSecondary,
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+      )
+
+      if (isDemoMode) {
+        if (hasSavedPersonalAccount) {
+          NavigationDrawerItem(
+            selected = false,
+            onClick = onSwitchToPersonalAccount,
+            icon = { Icon(Icons.Filled.Person, contentDescription = null) },
+            label = { Text("Switch to $savedPersonalName", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            colors =
+              NavigationDrawerItemDefaults.colors(
+                unselectedContainerColor = Color.Transparent,
+                unselectedIconColor = c.clinicalBlueAccent,
+                unselectedTextColor = c.deepOcean,
+              ),
+            modifier = Modifier.defaultMinSize(minHeight = 48.dp).testTag("drawer_switch_personal"),
+          )
+        }
+        NavigationDrawerItem(
+          selected = false,
+          onClick = onLogoutToCreateAccount,
+          icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+          label = { Text("Create My Account", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+          colors =
+            NavigationDrawerItemDefaults.colors(
+              unselectedContainerColor = Color.Transparent,
+              unselectedIconColor = c.clinicalBlueAccent,
+              unselectedTextColor = c.deepOcean,
+            ),
+          modifier = Modifier.defaultMinSize(minHeight = 48.dp).testTag("drawer_create_account"),
+        )
+      } else {
+        NavigationDrawerItem(
+          selected = false,
+          onClick = onSwitchToDemoAccount,
+          icon = { Icon(Icons.Filled.Refresh, contentDescription = null) },
+          label = { Text("Switch to Demo (Sunita Devi)", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+          colors =
+            NavigationDrawerItemDefaults.colors(
+              unselectedContainerColor = Color.Transparent,
+              unselectedIconColor = c.clinicalBlueAccent,
+              unselectedTextColor = c.deepOcean,
+            ),
+          modifier = Modifier.defaultMinSize(minHeight = 48.dp).testTag("drawer_switch_demo"),
+        )
+      }
+
+      NavigationDrawerItem(
+        selected = false,
+        onClick = onLogoutToLogin,
+        icon = { Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null) },
+        label = {
+          Text(
+            if (isDemoMode) "Log Out of Demo Mode" else "Log Out / Switch User",
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+          )
+        },
+        colors =
+          NavigationDrawerItemDefaults.colors(
+            unselectedContainerColor = Color.Transparent,
+            unselectedIconColor = StatusUrgentFg,
+            unselectedTextColor = StatusUrgentFg,
+          ),
+        modifier = Modifier.defaultMinSize(minHeight = 48.dp).testTag("drawer_logout"),
+      )
 
       Spacer(modifier = Modifier.height(10.dp))
       Text(

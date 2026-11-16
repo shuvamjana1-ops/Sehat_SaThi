@@ -32,14 +32,14 @@ fun rememberPrefersReducedMotion(): Boolean {
 }
 
 /**
- * Applies smooth, zero-recomposition 3D perspective depth (tilt, subtle scale, parallax lift,
- * and gentle edge fade) to LazyColumn cards as they enter and leave the viewport.
+ * Applies smooth, zero-recomposition 3D perspective depth (3D rotationX/Y, cylinder scale,
+ * parallax lift, and edge fade) to LazyColumn cards as they enter and leave the viewport.
  */
 fun Modifier.sehatScroll3DKeyed(
   listState: LazyListState,
   itemKey: Any,
   reducedMotion: Boolean,
-  maxTiltDegrees: Float = 7.5f,
+  maxTiltDegrees: Float = 12.5f,
 ): Modifier {
   if (reducedMotion) return this
   return this.graphicsLayer {
@@ -50,17 +50,18 @@ fun Modifier.sehatScroll3DKeyed(
     val itemInfo = layoutInfo.visibleItemsInfo.firstOrNull { it.key == itemKey } ?: return@graphicsLayer
     val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2f
     val itemCenter = itemInfo.offset + itemInfo.size / 2f
-    val normalized = ((itemCenter - viewportCenter) / (viewportHeight * 0.58f)).coerceIn(-1f, 1f)
+    val normalized = ((itemCenter - viewportCenter) / (viewportHeight * 0.55f)).coerceIn(-1f, 1f)
     val absNorm = abs(normalized)
     val curved = absNorm * absNorm
 
-    cameraDistance = 16f * density
+    cameraDistance = 12f * density
     rotationX = -normalized * maxTiltDegrees
-    val scale = 1f - (curved * 0.042f)
+    rotationY = normalized * 2.0f
+    val scale = 1f - (curved * 0.07f)
     scaleX = scale
     scaleY = scale
-    alpha = (1f - (curved * 0.14f)).coerceIn(0.84f, 1f)
-    translationY = normalized * 8f
+    alpha = (1f - (curved * 0.16f)).coerceIn(0.82f, 1f)
+    translationY = normalized * 14f
   }
 }
 
@@ -72,7 +73,7 @@ fun Modifier.sehatColumnScroll3D(
   scrollState: ScrollState,
   viewportHeightPx: Float,
   reducedMotion: Boolean,
-  maxTiltDegrees: Float = 6.5f,
+  maxTiltDegrees: Float = 11.5f,
 ): Modifier {
   if (reducedMotion) return this
   return composed {
@@ -90,17 +91,18 @@ fun Modifier.sehatColumnScroll3D(
 
         val viewportCenter = viewportHeightPx * 0.5f
         val itemCenter = metrics[0] + metrics[1] * 0.5f
-        val normalized = ((itemCenter - viewportCenter) / (viewportHeightPx * 0.62f)).coerceIn(-1f, 1f)
+        val normalized = ((itemCenter - viewportCenter) / (viewportHeightPx * 0.58f)).coerceIn(-1f, 1f)
         val absNorm = abs(normalized)
         val curved = absNorm * absNorm
 
-        cameraDistance = 16f * density
+        cameraDistance = 12f * density
         rotationX = -normalized * maxTiltDegrees
-        val scale = 1f - (curved * 0.04f)
+        rotationY = normalized * 1.8f
+        val scale = 1f - (curved * 0.065f)
         scaleX = scale
         scaleY = scale
-        alpha = (1f - (curved * 0.12f)).coerceIn(0.86f, 1f)
-        translationY = normalized * 6f
+        alpha = (1f - (curved * 0.14f)).coerceIn(0.84f, 1f)
+        translationY = normalized * 12f
       }
   }
 }
