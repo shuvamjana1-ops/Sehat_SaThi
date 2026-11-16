@@ -16,45 +16,40 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build-and-prepare-site:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Prepare Keystore, Secrets, and Android SDK 36.1
+      - name: Build Signed Android APK and Stage Site
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set +e
           if [ -f "debug.keystore.base64" ]; then
             base64 -d debug.keystore.base64 > debug.keystore
           fi
           if [ ! -f ".env" ]; then
-            cp .env.example .env || touch .env
+            cp .env.example .env 2>/dev/null || touch .env
           fi
           if [ -n "$ANDROID_HOME" ] && [ -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
-            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
-            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "platforms;android-36.1" "build-tools;36.0.0" > /dev/null || true
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "platforms;android-36.1" "build-tools;36.0.0" > /dev/null 2>&1
           fi
 
-      - name: Install Gradle 9.3.1 and Build Signed Debug APK
-        run: |
           curl -fsSL https://services.gradle.org/distributions/gradle-9.3.1-bin.zip -o /tmp/gradle.zip
-          unzip -q /tmp/gradle.zip -d /tmp/gradle
-          /tmp/gradle/gradle-9.3.1/bin/gradle :app:assembleDebug --no-daemon --stacktrace
+          unzip -q -o /tmp/gradle.zip -d /tmp/gradle
+          /tmp/gradle/gradle-9.3.1/bin/gradle :app:assembleDebug -Pkotlin.compiler.execution.strategy=daemon --stacktrace
 
-      - name: Stage GitHub Pages site and Publish Release APK
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
+          set -e
           mkdir -p _site
           if [ -d "docs" ]; then
             cp -r docs/* _site/
@@ -67,11 +62,11 @@ jobs:
             mkdir -p _site/data
             cp -r data/* _site/data/
           fi
+
           if [ -f "app/build/outputs/apk/debug/app-debug.apk" ]; then
             cp app/build/outputs/apk/debug/app-debug.apk _site/SehatSaathi-debug.apk
             mkdir -p _site/docs
             cp app/build/outputs/apk/debug/app-debug.apk _site/docs/SehatSaathi-debug.apk
-            echo "Built APK size:"
             ls -lh _site/SehatSaathi-debug.apk
             gh release create v1.0.0 _site/SehatSaathi-debug.apk \
               --title "SehatSaathi Android APK (v1.0.0)" \
