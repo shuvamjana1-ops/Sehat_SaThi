@@ -161,7 +161,17 @@ function checkHtmlFile(relPath, baseDir) {
   assert.ok(siteTs.includes("SUPPORT_PHONE: ''") && siteTs.includes("SUPPORT_EMAIL: ''"), 'src/config/site.ts contact fields must stay blank');
   assert.ok(mainScript.includes("SUPPORT_PHONE: ''") && mainScript.includes("SUPPORT_EMAIL: ''"), `${relPath}: SITE_CONFIG contact fields must stay blank`);
   assert.ok(visibleText.includes('77') && visibleText.includes('30') && visibleText.includes('60'), `${relPath}: missing verified repo metrics 77 / 30 / 60`);
-  checks += 3;
+  assert.ok(html.includes('will-change: transform;') && html.includes('.hero-section.is-offscreen .floating-hero-card'), `${relPath}: missing GPU compositing will-change / off-screen pause for floating hero cards`);
+  assert.ok(
+    html.includes('id="toastRegion"') &&
+    html.includes('id="ssToast"') &&
+    html.includes('id="ssToastClose"') &&
+    mainScript.includes('function showToast(') &&
+    mainScript.includes('Log Reading saved:') &&
+    mainScript.includes('Settings updated:'),
+    `${relPath}: missing lightweight toast component or required action triggers`
+  );
+  checks += 5;
 
   return { checks };
 }

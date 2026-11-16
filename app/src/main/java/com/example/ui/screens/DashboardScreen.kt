@@ -28,6 +28,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Groups
@@ -237,6 +238,16 @@ fun DashboardScreen(
             testTag = "simple_action_call",
           )
         }
+
+        item(key = "simple_action_ai") {
+          SehatPrimaryButton(
+            text = "5. Care AI (Do's & Chat)",
+            icon = Icons.Filled.AutoAwesome,
+            onClick = { onNavigate(AppRoutes.ASSISTANT) },
+            modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 56.dp),
+            testTag = "simple_action_ai",
+          )
+        }
       } else {
         // Sculpted Deep Ocean Hero Greeting Banner + Sample Data Notice
         item(key = "dash_hero") {
@@ -410,6 +421,7 @@ fun DashboardScreen(
             QuickActionsTile(
               onLogReading = { onNavigate(AppRoutes.LOG_READING) },
               onScanRx = { onNavigate(AppRoutes.SCAN_RX) },
+              onOpenCareAi = { onNavigate(AppRoutes.ASSISTANT) },
             )
           }
         }
@@ -567,6 +579,7 @@ private fun StaggeredTile(
 private fun QuickActionsTile(
   onLogReading: () -> Unit,
   onScanRx: () -> Unit,
+  onOpenCareAi: () -> Unit,
 ) {
   val c = SehatPalette.current
   SehatCard(
@@ -577,7 +590,7 @@ private fun QuickActionsTile(
     Text("Quick actions", style = MaterialTheme.typography.titleLarge, color = c.deepOcean)
     Spacer(modifier = Modifier.height(4.dp))
     Text(
-      text = "Log a sugar or blood pressure check, or read a prescription photo.",
+      text = "Log a sugar or blood pressure check, scan a prescription, or ask Care AI for Do's, Don'ts & chat.",
       style = MaterialTheme.typography.bodyMedium,
       color = c.inkSecondary,
     )
@@ -599,6 +612,13 @@ private fun QuickActionsTile(
         onClick = onScanRx,
         minHeight = 56.dp,
         testTag = "quick_scan_rx_btn",
+      )
+      SehatSecondaryButton(
+        text = "Ask Care AI",
+        icon = Icons.Filled.AutoAwesome,
+        onClick = onOpenCareAi,
+        minHeight = 56.dp,
+        testTag = "quick_care_ai_btn",
       )
     }
   }

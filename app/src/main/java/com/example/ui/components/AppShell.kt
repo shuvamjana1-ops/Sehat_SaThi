@@ -35,6 +35,7 @@ import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.MenuOpen
 import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.DarkMode
@@ -137,6 +138,7 @@ object AppRoutes {
   const val MEDICINES = "medicines"
   const val TRENDS = "trends"
   const val FAMILY = "family"
+  const val ASSISTANT = "assistant"
   const val ACCOUNT = "account"
   const val INFO_ROUTE = "info/{section}"
   const val NOT_FOUND = "not_found"
@@ -196,6 +198,7 @@ fun SehatAppShell(
     remember(destinations) {
       destinations +
         listOf(
+          ShellDestination(AppRoutes.ASSISTANT, "Care AI & Chat", Icons.Filled.AutoAwesome),
           ShellDestination(AppRoutes.SCAN_RX, "Scan prescription", Icons.Filled.DocumentScanner),
           ShellDestination(AppRoutes.ACCOUNT, "Account & security", Icons.Filled.Person),
         )

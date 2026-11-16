@@ -877,6 +877,7 @@
       background: #0E3E52;
       border: 1px solid rgba(255, 255, 255, 0.24);
       box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      will-change: transform;
     }
 
     @supports (backdrop-filter: blur(1px)) {
@@ -911,20 +912,29 @@
     }
 
     @keyframes driftCardA {
-      0% { transform: translateY(0px); }
-      100% { transform: translateY(-9px); }
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(0, -9px, 0); }
     }
 
     @keyframes driftCardB {
-      0% { transform: translateY(0px); }
-      100% { transform: translateY(9px); }
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(0, 9px, 0); }
     }
 
-    body.is-tab-hidden .floating-hero-card {
+    body.is-tab-hidden .floating-hero-card,
+    .hero-section.is-offscreen .floating-hero-card {
       animation-play-state: paused !important;
+      will-change: auto;
     }
 
-    @media (prefers-reduced-motion: reduce), (max-width: 639px) {
+    @media (prefers-reduced-motion: reduce) {
+      .floating-hero-card {
+        animation: none !important;
+        will-change: auto;
+      }
+    }
+
+    @media (max-width: 639px) {
       .floating-hero-card {
         animation: none !important;
       }
@@ -1606,8 +1616,125 @@
       }
     }
 
+    /* Lightweight Toast Notification */
+    .toast-region {
+      position: fixed;
+      left: calc(16px + env(safe-area-inset-left));
+      right: calc(16px + env(safe-area-inset-right));
+      bottom: calc(18px + env(safe-area-inset-bottom));
+      z-index: 190;
+      display: flex;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    @media (min-width: 640px) {
+      .toast-region {
+        left: auto;
+        justify-content: flex-end;
+      }
+    }
+
+    .ss-toast {
+      pointer-events: auto;
+      width: min(420px, 100%);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 10px 10px 16px;
+      border-radius: var(--radius-control);
+      background: var(--deep-ocean);
+      color: #FFFFFF;
+      border: 1px solid rgba(255, 255, 255, 0.20);
+      box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      line-height: 1.4;
+      opacity: 0;
+      transform: translate3d(0, 14px, 0);
+      transition: opacity var(--dur-250) var(--ease-out), transform var(--dur-250) var(--ease-out);
+    }
+
+    html.dark-mode .ss-toast {
+      background: var(--surface-mist);
+      color: var(--ink);
+      border-color: var(--clinical-blue);
+    }
+
+    @supports (backdrop-filter: blur(1px)) {
+      .ss-toast {
+        background: rgba(11, 79, 108, 0.92);
+        backdrop-filter: blur(18px) saturate(160%);
+        -webkit-backdrop-filter: blur(18px) saturate(160%);
+      }
+      html.dark-mode .ss-toast {
+        background: rgba(16, 37, 47, 0.92);
+      }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      .ss-toast {
+        background: var(--deep-ocean);
+        backdrop-filter: none;
+      }
+      html.dark-mode .ss-toast {
+        background: var(--surface-mist);
+      }
+    }
+
+    .ss-toast.is-visible {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .ss-toast.is-urgent {
+      background: var(--status-urgent-bg);
+      color: var(--status-urgent-fg);
+      border-color: rgba(179, 20, 18, 0.28);
+    }
+
+    .ss-toast-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      color: #A7DCEB;
+    }
+
+    .ss-toast.is-urgent .ss-toast-icon {
+      color: var(--status-urgent-fg);
+    }
+
+    .ss-toast-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .ss-toast-close {
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .ss-toast-close:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .ss-toast.is-urgent .ss-toast-close:hover {
+      background: rgba(179, 20, 18, 0.12);
+    }
+
     @media print {
-      .site-header, .hero-stage, .hero-curve, .scroll-cue, #preloader, .scenarios-track button, .dialog-backdrop, .mobile-drawer, .drawer-scrim, .app-bottomnav {
+      .site-header, .hero-stage, .hero-curve, .scroll-cue, #preloader, .scenarios-track button, .dialog-backdrop, .mobile-drawer, .drawer-scrim, .app-bottomnav, .toast-region {
         display: none !important;
       }
       body, .band, .band-ocean, .hero-section, .site-footer {
@@ -2456,6 +2583,20 @@
     </div>
   </div>
 
+  <!-- Lightweight Toast Notification -->
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true">
+    <div class="ss-toast" id="ssToast" role="status" hidden>
+      <span class="ss-toast-icon" id="ssToastIcon" aria-hidden="true"></span>
+      <span class="ss-toast-text" id="ssToastMessage"></span>
+      <button type="button" class="ss-toast-close" id="ssToastClose" aria-label="Dismiss notification">
+        <svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18" />
+          <line x1="18" y1="6" x2="6" y2="18" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
   <script>
     (function () {
       'use strict';
@@ -2507,6 +2648,67 @@
         }).join(' ');
       }
 
+      // 0b. Lightweight Toast Notification Helper
+      var toastRegion = document.getElementById('toastRegion');
+      var toastEl = document.getElementById('ssToast');
+      var toastIconEl = document.getElementById('ssToastIcon');
+      var toastMsgEl = document.getElementById('ssToastMessage');
+      var toastCloseBtn = document.getElementById('ssToastClose');
+      var toastTimer = null;
+
+      function hideToast() {
+        if (toastTimer) {
+          clearTimeout(toastTimer);
+          toastTimer = null;
+        }
+        if (!toastEl) return;
+        toastEl.classList.remove('is-visible');
+        setTimeout(function () {
+          if (!toastEl.classList.contains('is-visible')) {
+            toastEl.hidden = true;
+          }
+        }, prefersReducedMotion ? 10 : 250);
+      }
+
+      function showToast(message, variant) {
+        if (!toastEl || !toastMsgEl || !message) return;
+        if (toastTimer) {
+          clearTimeout(toastTimer);
+          toastTimer = null;
+        }
+        var isUrgent = variant === 'urgent';
+        if (toastRegion) {
+          toastRegion.setAttribute('aria-live', isUrgent ? 'assertive' : 'polite');
+        }
+        toastEl.classList.toggle('is-urgent', isUrgent);
+        toastEl.setAttribute('role', isUrgent ? 'alert' : 'status');
+        if (toastIconEl) {
+          toastIconEl.innerHTML = isUrgent
+            ? '<svg class="svg-icon" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>'
+            : '<svg class="svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><polyline points="9 12 11 14 15 10" /></svg>';
+        }
+        toastMsgEl.textContent = message;
+        toastEl.hidden = false;
+        requestAnimationFrame(function () {
+          toastEl.classList.add('is-visible');
+        });
+        toastTimer = setTimeout(hideToast, 3600);
+      }
+
+      if (toastCloseBtn) {
+        toastCloseBtn.addEventListener('click', hideToast);
+      }
+      if (toastEl) {
+        toastEl.addEventListener('mouseenter', function () {
+          if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+        });
+        toastEl.addEventListener('mouseleave', function () {
+          if (toastEl.classList.contains('is-visible')) {
+            toastTimer = setTimeout(hideToast, 2200);
+          }
+        });
+      }
+
       // 1. Theme toggle (no flash)
       var themeBtn = document.getElementById('themeToggleBtn');
       var themeMeta = document.getElementById('themeColorMeta');
@@ -2521,6 +2723,7 @@
           var isDark = document.documentElement.classList.toggle('dark-mode');
           try { localStorage.setItem('ss_theme', isDark ? 'dark' : 'light'); } catch (e) {}
           syncThemeUi();
+          showToast('Settings updated: ' + (isDark ? 'Dark theme enabled' : 'Light theme enabled'));
         });
       }
 
@@ -2554,13 +2757,22 @@
       }, { passive: true });
       updateScrollUi();
 
-      // Pause loops when tab hidden
+      // Pause loops when tab hidden or hero scrolled off-screen
       document.addEventListener('visibilitychange', function () {
         document.body.classList.toggle('is-tab-hidden', document.hidden);
       });
 
-      // 3. Soft 6px pointer parallax on desktop pointer devices
       var heroSection = document.getElementById('heroSection');
+      if (heroSection && 'IntersectionObserver' in window) {
+        var heroVisObs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            heroSection.classList.toggle('is-offscreen', !entry.isIntersecting);
+          });
+        }, { threshold: 0.01 });
+        heroVisObs.observe(heroSection);
+      }
+
+      // 3. Soft 6px pointer parallax on desktop pointer devices
       var parallaxLayers = document.querySelectorAll('.parallax-layer');
       var canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
       if (heroSection && parallaxLayers.length && canHover && !prefersReducedMotion) {
@@ -2578,6 +2790,15 @@
               var ty = Math.max(-6, Math.min(6, ny * depth));
               el.style.translate = tx.toFixed(1) + 'px ' + ty.toFixed(1) + 'px';
             });
+          });
+        }, { passive: true });
+        heroSection.addEventListener('pointerleave', function () {
+          if (rafParallax) {
+            cancelAnimationFrame(rafParallax);
+            rafParallax = null;
+          }
+          parallaxLayers.forEach(function (el) {
+            el.style.translate = '0px 0px';
           });
         }, { passive: true });
       }
@@ -2902,9 +3123,14 @@
           var takeBtn = document.getElementById('simTakeDoseBtn');
           if (takeBtn) {
             takeBtn.addEventListener('click', function () {
+              if (simState.takenToday >= 4) {
+                showToast('All 4 scheduled doses already marked taken today.');
+                return;
+              }
               simState.takenToday = Math.min(4, simState.takenToday + 1);
               simState.stock = Math.max(0, simState.stock - 1);
               renderSimulator();
+              showToast('Dose marked taken (' + simState.takenToday + ' of 4' + (simState.isDemo ? ', Demo' : '') + ')');
             });
           }
         } else if (simState.tab === 'log') {
@@ -2923,12 +3149,25 @@
           if (saveBtn && gField) {
             saveBtn.addEventListener('click', function () {
               var next = parseInt(gField.value, 10);
-              if (!isNaN(next)) simState.sugar = next;
+              if (isNaN(next)) {
+                showToast('Enter a whole number between 20 and 600 mg/dL.', 'urgent');
+                return;
+              }
+              simState.sugar = next;
+              if (next < 20 || next > 600) {
+                renderSimulator();
+                showToast('Reading out of range (' + next + ' mg/dL): verify meter number.', 'urgent');
+                return;
+              }
               if (next < 54) {
                 simState.emergency = true;
                 simState.emergencyHeadline = 'Critical Low Blood Sugar (' + next + ' mg/dL)';
+                renderSimulator();
+                showToast('Emergency low sugar threshold triggered (' + next + ' mg/dL)', 'urgent');
+                return;
               }
               renderSimulator();
+              showToast('Log Reading saved: ' + next + ' mg/dL' + (simState.isDemo ? ' (Demo)' : ''));
             });
           }
         } else if (simState.tab === 'meds') {
@@ -3008,6 +3247,7 @@
             simState.scenarioCaption = 'Demo: Missed morning dose (stock unchanged)';
           }
           renderSimulator();
+          showToast(simState.scenarioCaption);
           var target = document.getElementById('live-app');
           if (target) target.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
         });
@@ -3027,6 +3267,7 @@
           simState.emergency = false;
           simState.scenarioCaption = 'Interactive Web Companion (Demo reset)';
           renderSimulator();
+          showToast('Demo profile reset to Sunita Devi');
         });
       }
 
@@ -3102,15 +3343,19 @@
         if (saveBtn && nameInput) {
           saveBtn.addEventListener('click', function () {
             var val = nameInput.value.trim();
-            if (val) {
-              simState.accountName = val;
-              simState.isDemo = false;
-              simState.tab = 'home';
-              renderSimulator();
-              closeAppDialog();
-              var liveEl = document.getElementById('live-app');
-              if (liveEl) liveEl.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+            if (!val) {
+              showToast('Please enter a name to continue.', 'urgent');
+              nameInput.focus();
+              return;
             }
+            simState.accountName = val;
+            simState.isDemo = false;
+            simState.tab = 'home';
+            renderSimulator();
+            closeAppDialog();
+            showToast('Settings updated: Profile saved for ' + val);
+            var liveEl = document.getElementById('live-app');
+            if (liveEl) liveEl.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
           });
         }
         if (demoSwitchBtn) {
@@ -3120,6 +3365,7 @@
             simState.tab = 'home';
             renderSimulator();
             closeAppDialog();
+            showToast('Settings updated: Switched to Sunita Devi (Demo)');
           });
         }
       }

@@ -31,6 +31,7 @@ import com.example.ui.components.SehatAppShell
 import com.example.ui.components.SehatToastBanner
 import com.example.ui.components.rememberPrefersReducedMotion
 import com.example.ui.screens.AccountScreen
+import com.example.ui.screens.CareAssistantScreen
 import com.example.ui.screens.DashboardScreen
 import com.example.ui.screens.EmergencyScreen
 import com.example.ui.screens.FamilyAlertsScreen
@@ -391,6 +392,26 @@ fun SehatSaathiApp(
           }
         }
 
+        composable(AppRoutes.ASSISTANT) {
+          ProtectedShell(currentRoute = AppRoutes.ASSISTANT) { padding ->
+            CareAssistantScreen(
+              uiState = uiState,
+              contentPadding = padding,
+              onSelectTab = viewModel::setCareAssistantTab,
+              onTopicInputChange = viewModel::updateCareTopicInput,
+              onRequestDoDont = viewModel::requestDoDontGuidance,
+              onAskFollowUpInChat = viewModel::askFollowUpInCareChat,
+              onSendChatMessage = viewModel::sendCareChatMessage,
+              onChatDraftChange = viewModel::onCareChatDraftChanged,
+              onRetryChat = viewModel::retryLastCareChatMessage,
+              onResetChat = viewModel::resetCareChat,
+              onDismissChatError = viewModel::dismissCareChatError,
+              onDismissEmergencyShortcut = viewModel::dismissCareEmergencyShortcut,
+              onOpenEmergency = { viewModel.openEmergencyScreenManually(null) },
+            )
+          }
+        }
+
         composable(AppRoutes.ACCOUNT) {
           ProtectedShell(currentRoute = AppRoutes.ACCOUNT) { padding ->
             AccountScreen(
@@ -497,6 +518,7 @@ private fun routePageTitle(route: String, infoSectionArg: String?): String =
     AppRoutes.MEDICINES -> "Medicines & refills"
     AppRoutes.TRENDS -> "Trends & summary"
     AppRoutes.FAMILY -> "Family & alerts"
+    AppRoutes.ASSISTANT -> "Care AI & Chat"
     AppRoutes.ACCOUNT -> "Profile"
     AppRoutes.NOT_FOUND -> "Page not found"
     AppRoutes.INFO_ROUTE ->

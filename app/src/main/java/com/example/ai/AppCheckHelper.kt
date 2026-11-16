@@ -33,16 +33,31 @@ fun configureAppCheck(context: Context, intent: Intent?) {
           )
         prefs.edit().putString(DEBUG_SECRET_KEY, debugToken).commit()
         Log.d(TAG, "App Check debug secret configured successfully.")
+      } else {
+        Log.w(TAG, "No debug token found in Intent extra.")
+      }
+
+      FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+        DebugAppCheckProviderFactory.getInstance(),
+      )
+      Log.d(TAG, "DebugAppCheckProviderFactory installed.")
+    } else {
+      val resId = context.resources.getIdentifier(RECAPTCHA_SITE_KEY_RES, "string", context.packageName)
+      if (resId != 0) {
+        val siteKey = context.getString(resId)
+        if (siteKey.isNotBlank()) {
+          FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
+            RecaptchaAppCheckProviderFactory.getInstance(siteKey),
+          )
+          Log.d(TAG, "RecaptchaAppCheckProviderFactory installed.")
+        } else {
+          Log.e(TAG, "recaptcha_site_key resource string is blank.")
+        }
+      } else {
+        Log.e(TAG, "recaptcha_site_key string resource not found in package.")
       }
     }
-
-    // Always install DebugAppCheckProviderFactory safely to prevent invalid token errors
-    FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
-      DebugAppCheckProviderFactory.getInstance(),
-    )
-    Log.d(TAG, "AppCheckProviderFactory installed successfully.")
   } catch (e: Exception) {
-    Log.e(TAG, "Firebase App Check initialization caught exception (ignored for smooth demo)", e)
+    Log.e(TAG, "Failed to initialize Firebase App Check", e)
   }
 }
-

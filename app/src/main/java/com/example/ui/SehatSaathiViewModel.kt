@@ -5,6 +5,11 @@ import android.graphics.Bitmap
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import android.util.Log
+import com.example.ai.AdvisorUiState
+import com.example.ai.CareAssistantRepository
+import com.example.ai.CareChatMessage
+import com.example.ai.ChatRole
 import com.example.ai.ExtractedRxMedicine
 import com.example.ai.ImageQualityAssessment
 import com.example.ai.ParsedPrescriptionResult
@@ -55,11 +60,17 @@ import com.example.ui.theme.ThemePreference
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -98,6 +109,17 @@ data class RxScannerState(
   val checkReport: MedicineSafetyCheckReport? = null,
   val isExplainingInteraction: Boolean = false,
   val interactionExplanation: String? = null,
+)
+
+data class CareAssistantState(
+  val activeTab: Int = 0, // 0 = Do's & Don'ts, 1 = Care Chat
+  val topicInput: String = "",
+  val advisorState: AdvisorUiState = AdvisorUiState.Idle,
+  val chatMessages: List<CareChatMessage> = emptyList(),
+  val isChatStreaming: Boolean = false,
+  val chatError: String? = null,
+  val lastFailedChatPrompt: String? = null,
+  val showEmergencyShortcutBanner: Boolean = false,
 )
 
 data class SehatSaathiUiState(
@@ -149,6 +171,7 @@ data class SehatSaathiUiState(
   val notificationSwitches: NotificationSwitchPrefs = NotificationSwitchPrefs(),
   val hasScannedPrescription: Boolean = false,
   val toastMessage: String? = null,
+  val careAssistant: CareAssistantState = CareAssistantState(),
 ) {
   val effectiveOnline: Boolean
     get() = isDeviceOnline && !isOfflineSimulationEnabled
@@ -158,6 +181,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
   private val repository = AuthSessionRepository(application.applicationContext)
   private val vitalsAiParser = VitalsAiParser()
   private val rxAiParser = PrescriptionAiParser()
+  private val careAssistantRepository = CareAssistantRepository()
 
   private val _uiState = MutableStateFlow(SehatSaathiUiState())
   val uiState: StateFlow<SehatSaathiUiState> = _uiState.asStateFlow()
@@ -165,6 +189,13 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
   private var preloaderStarted = false
   private var lastAlertRecord: AlertCooldownRecord? = null
   private var escalationJob: Job? = null
+  private var careChatJob: Job? = null
+  private var careAdvisorJob: Job? = null
+  private val careTopicDraftFlow = MutableStateFlow("")
+  private val careChatDraftFlow = MutableStateFlow("")
+  private var lastAdvisorSubmitAtMs: Long = 0L
+  private var lastAdvisorSubmittedTopic: String = ""
+  private var lastChatSubmitAtMs: Long = 0L
 
   init {
     val loadedDataset = runCatching { DrugKnowledgeRepository.loadFromAssets(application.applicationContext) }.getOrNull()
@@ -243,6 +274,59 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
           _uiState.update { it.copy(isDeviceOnline = online) }
         }
       }
+    }
+
+    observeCareInputDebouncing()
+  }
+
+  @OptIn(FlowPreview::class)
+  private fun observeCareInputDebouncing() {
+    // Debounce Care AI topic input before committing ViewModel state updates and red-flag pre-screening
+    viewModelScope.launch {
+      careTopicDraftFlow
+        .drop(1)
+        .debounce(300L)
+        .distinctUntilChanged()
+        .collect { draft ->
+          val clean = CareAssistantRepository.sanitizeCareInput(draft)
+          val hasRedFlag = clean.isNotBlank() && CareAssistantRepository.detectRedFlagKeywords(clean)
+          _uiState.update { state ->
+            if (state.careAssistant.topicInput == draft &&
+              (!hasRedFlag || state.careAssistant.showEmergencyShortcutBanner)
+            ) {
+              state
+            } else {
+              state.copy(
+                careAssistant =
+                  state.careAssistant.copy(
+                    topicInput = draft,
+                    showEmergencyShortcutBanner = state.careAssistant.showEmergencyShortcutBanner || hasRedFlag,
+                  ),
+              )
+            }
+          }
+        }
+    }
+
+    // Debounce Care Chat composer drafts for silent red-flag pre-screening without per-keystroke work
+    viewModelScope.launch {
+      careChatDraftFlow
+        .drop(1)
+        .debounce(300L)
+        .distinctUntilChanged()
+        .collect { draft ->
+          if (draft.isNotBlank() && CareAssistantRepository.detectRedFlagKeywords(draft)) {
+            _uiState.update { state ->
+              if (state.careAssistant.showEmergencyShortcutBanner) {
+                state
+              } else {
+                state.copy(
+                  careAssistant = state.careAssistant.copy(showEmergencyShortcutBanner = true),
+                )
+              }
+            }
+          }
+        }
     }
   }
 
@@ -1999,6 +2083,13 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
 
   private fun resetDemoDataInternal() {
     escalationJob?.cancel()
+    careChatJob?.cancel()
+    careAdvisorJob?.cancel()
+    careTopicDraftFlow.value = ""
+    careChatDraftFlow.value = ""
+    lastAdvisorSubmitAtMs = 0L
+    lastAdvisorSubmittedTopic = ""
+    lastChatSubmitAtMs = 0L
     lastAlertRecord = null
     runCatching { DoctorSummaryAndDataExporter.clearExportCache(getApplication()) }
     _uiState.update { state ->
@@ -2039,6 +2130,7 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
         coverBitmap = null,
         notificationSwitches = NotificationSwitchPrefs(),
         hasScannedPrescription = false,
+        careAssistant = CareAssistantState(),
       )
     }
   }
@@ -2186,5 +2278,369 @@ class SehatSaathiViewModel(application: Application) : AndroidViewModel(applicat
 
   fun showToast(message: String) {
     _uiState.update { it.copy(toastMessage = message) }
+  }
+
+  // --- Care AI: Structured Do's & Don'ts + Multi-turn Streaming Chatbot ---
+
+  fun setCareAssistantTab(tab: Int) {
+    _uiState.update { state ->
+      state.copy(careAssistant = state.careAssistant.copy(activeTab = tab.coerceIn(0, 1)))
+    }
+  }
+
+  fun updateCareTopicInput(value: String) {
+    careTopicDraftFlow.value = value
+  }
+
+  fun onCareChatDraftChanged(value: String) {
+    careChatDraftFlow.value = value
+  }
+
+  fun dismissCareEmergencyShortcut() {
+    _uiState.update { state ->
+      state.copy(careAssistant = state.careAssistant.copy(showEmergencyShortcutBanner = false))
+    }
+  }
+
+  fun requestDoDontGuidance(rawTopic: String) {
+    val cleanTopic = CareAssistantRepository.sanitizeCareInput(rawTopic)
+    if (cleanTopic.isBlank()) {
+      _uiState.update { state ->
+        state.copy(
+          careAssistant =
+            state.careAssistant.copy(
+              advisorState = AdvisorUiState.Error("Please select a situation or type what you need help with."),
+            ),
+        )
+      }
+      return
+    }
+
+    val now = System.currentTimeMillis()
+    if (
+      now - lastAdvisorSubmitAtMs < 400L &&
+      cleanTopic.equals(lastAdvisorSubmittedTopic, ignoreCase = true) &&
+      careAdvisorJob?.isActive == true
+    ) {
+      return
+    }
+    lastAdvisorSubmitAtMs = now
+    lastAdvisorSubmittedTopic = cleanTopic
+    careTopicDraftFlow.value = cleanTopic
+
+    val hasRedFlag = CareAssistantRepository.detectRedFlagKeywords(cleanTopic)
+    val snapshot = _uiState.value
+    if (!snapshot.effectiveOnline) {
+      _uiState.update { state ->
+        state.copy(
+          careAssistant =
+            state.careAssistant.copy(
+              topicInput = cleanTopic,
+              showEmergencyShortcutBanner = state.careAssistant.showEmergencyShortcutBanner || hasRedFlag,
+              advisorState =
+                AdvisorUiState.Error(
+                  "No internet right now. Connect to the internet to ask Care AI. If you feel unwell or have urgent symptoms, tap Emergency Help or call 112.",
+                ),
+            ),
+        )
+      }
+      return
+    }
+
+    val contextSummary =
+      CareAssistantRepository.buildPatientContextSummary(
+        patient = snapshot.patient,
+        medicines = snapshot.medicines,
+        readings = snapshot.readings,
+        isDemoMode = snapshot.session.isDemoMode,
+      )
+
+    careAdvisorJob?.cancel()
+    careAdvisorJob =
+      viewModelScope.launch {
+        _uiState.update { state ->
+          state.copy(
+            careAssistant =
+              state.careAssistant.copy(
+                topicInput = cleanTopic,
+                showEmergencyShortcutBanner = state.careAssistant.showEmergencyShortcutBanner || hasRedFlag,
+                advisorState = AdvisorUiState.Loading,
+              ),
+          )
+        }
+        try {
+          val result = careAssistantRepository.fetchDoDontGuidance(cleanTopic, contextSummary)
+          result
+            .onSuccess { guidance ->
+              _uiState.update { state ->
+                state.copy(
+                  careAssistant =
+                    state.careAssistant.copy(
+                      advisorState = AdvisorUiState.Success(guidance),
+                    ),
+                )
+              }
+            }
+            .onFailure { err ->
+              _uiState.update { state ->
+                state.copy(
+                  careAssistant =
+                    state.careAssistant.copy(
+                      advisorState =
+                        AdvisorUiState.Error(
+                          err.message ?: "Could not load Care AI guidance right now. Please try again.",
+                        ),
+                    ),
+                )
+              }
+            }
+        } catch (e: CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Log.e("SehatSaathiVM", "Unexpected Do/Don't AI failure", e)
+          _uiState.update { state ->
+            state.copy(
+              careAssistant =
+                state.careAssistant.copy(
+                  advisorState =
+                    AdvisorUiState.Error(
+                      e.localizedMessage ?: "Could not load Care AI guidance right now.",
+                    ),
+                ),
+            )
+          }
+        }
+      }
+  }
+
+  fun askFollowUpInCareChat(promptText: String) {
+    setCareAssistantTab(1)
+    sendCareChatMessage(promptText)
+  }
+
+  fun sendCareChatMessage(rawInput: String) {
+    val cleanInput = CareAssistantRepository.sanitizeCareInput(rawInput)
+    if (cleanInput.isBlank()) return
+    if (_uiState.value.careAssistant.isChatStreaming) return
+
+    val now = System.currentTimeMillis()
+    if (now - lastChatSubmitAtMs < 400L) return
+    lastChatSubmitAtMs = now
+    careChatDraftFlow.value = ""
+
+    val hasRedFlag = CareAssistantRepository.detectRedFlagKeywords(cleanInput)
+    val timeLabel = SimpleDateFormat("h:mm a", Locale.getDefault()).format(Date())
+    val snapshot = _uiState.value
+
+    if (!snapshot.effectiveOnline) {
+      _uiState.update { state ->
+        state.copy(
+          careAssistant =
+            state.careAssistant.copy(
+              showEmergencyShortcutBanner = state.careAssistant.showEmergencyShortcutBanner || hasRedFlag,
+              chatError =
+                "You are offline. Connect to the internet to chat with Care AI. For urgent symptoms, tap Emergency Help or call 112.",
+            ),
+        )
+      }
+      return
+    }
+
+    val userMsgId = "user-${System.currentTimeMillis()}"
+    val assistantMsgId = "ai-${System.currentTimeMillis() + 1}"
+    val userMessage =
+      CareChatMessage(
+        id = userMsgId,
+        role = ChatRole.USER,
+        text = cleanInput,
+        isStreaming = false,
+        timestampLabel = timeLabel,
+        hasRedFlagBanner = hasRedFlag,
+      )
+    val streamingPlaceholder =
+      CareChatMessage(
+        id = assistantMsgId,
+        role = ChatRole.ASSISTANT,
+        text = "",
+        isStreaming = true,
+        timestampLabel = timeLabel,
+        hasRedFlagBanner = hasRedFlag,
+      )
+
+    val historyBeforeTurn = snapshot.careAssistant.chatMessages
+    val contextSummary =
+      CareAssistantRepository.buildPatientContextSummary(
+        patient = snapshot.patient,
+        medicines = snapshot.medicines,
+        readings = snapshot.readings,
+        isDemoMode = snapshot.session.isDemoMode,
+      )
+
+    _uiState.update { state ->
+      state.copy(
+        careAssistant =
+          state.careAssistant.copy(
+            chatMessages = state.careAssistant.chatMessages + userMessage + streamingPlaceholder,
+            isChatStreaming = true,
+            chatError = null,
+            lastFailedChatPrompt = null,
+            showEmergencyShortcutBanner = state.careAssistant.showEmergencyShortcutBanner || hasRedFlag,
+          ),
+      )
+    }
+
+    careChatJob?.cancel()
+    careChatJob =
+      viewModelScope.launch {
+        val accumulated = StringBuilder()
+        var lastUiEmitMs = 0L
+        try {
+          careAssistantRepository
+            .streamChatReply(
+              history = historyBeforeTurn,
+              userMessage = cleanInput,
+              patientContextSummary = contextSummary,
+            )
+            .collect { chunk ->
+              accumulated.append(chunk)
+              val emitNowMs = System.currentTimeMillis()
+              if (lastUiEmitMs == 0L || emitNowMs - lastUiEmitMs >= 45L || chunk.contains('\n')) {
+                lastUiEmitMs = emitNowMs
+                val nextText = accumulated.toString()
+                _uiState.update { state ->
+                  val updated =
+                    state.careAssistant.chatMessages.map { msg ->
+                      if (msg.id == assistantMsgId) msg.copy(text = nextText) else msg
+                    }
+                  state.copy(careAssistant = state.careAssistant.copy(chatMessages = updated))
+                }
+              }
+            }
+
+          val finalReply = accumulated.toString().trim()
+          if (finalReply.isEmpty()) {
+            _uiState.update { state ->
+              state.copy(
+                careAssistant =
+                  state.careAssistant.copy(
+                    chatMessages = state.careAssistant.chatMessages.filterNot { it.id == assistantMsgId },
+                    isChatStreaming = false,
+                    chatError = "Care AI returned an empty reply. Please try asking again.",
+                    lastFailedChatPrompt = cleanInput,
+                  ),
+              )
+            }
+          } else {
+            _uiState.update { state ->
+              val finalized =
+                state.careAssistant.chatMessages.map { msg ->
+                  if (msg.id == assistantMsgId) msg.copy(text = finalReply, isStreaming = false) else msg
+                }
+              state.copy(
+                careAssistant =
+                  state.careAssistant.copy(
+                    chatMessages = finalized,
+                    isChatStreaming = false,
+                    chatError = null,
+                    lastFailedChatPrompt = null,
+                  ),
+              )
+            }
+          }
+        } catch (e: TimeoutCancellationException) {
+          Log.e("SehatSaathiVM", "Care AI streaming timed out", e)
+          val partialReply = accumulated.toString().trim()
+          _uiState.update { state ->
+            val cleanedMessages =
+              state.careAssistant.chatMessages.mapNotNull { msg ->
+                if (msg.id == assistantMsgId) {
+                  if (partialReply.isNotEmpty()) msg.copy(text = partialReply, isStreaming = false) else null
+                } else {
+                  msg
+                }
+              }
+            state.copy(
+              careAssistant =
+                state.careAssistant.copy(
+                  chatMessages = cleanedMessages,
+                  isChatStreaming = false,
+                  chatError = "Response timed out after 60 seconds. Tap Retry to try again.",
+                  lastFailedChatPrompt = cleanInput,
+                ),
+            )
+          }
+        } catch (e: CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Log.e("SehatSaathiVM", "Care AI chat failed", e)
+          val partialReply = accumulated.toString().trim()
+          _uiState.update { state ->
+            val cleanedMessages =
+              state.careAssistant.chatMessages.mapNotNull { msg ->
+                if (msg.id == assistantMsgId) {
+                  if (partialReply.isNotEmpty()) msg.copy(text = partialReply, isStreaming = false) else null
+                } else {
+                  msg
+                }
+              }
+            state.copy(
+              careAssistant =
+                state.careAssistant.copy(
+                  chatMessages = cleanedMessages,
+                  isChatStreaming = false,
+                  chatError = e.localizedMessage ?: "Care AI could not respond right now. Please try again.",
+                  lastFailedChatPrompt = cleanInput,
+                ),
+            )
+          }
+        }
+      }
+  }
+
+  fun retryLastCareChatMessage() {
+    val care = _uiState.value.careAssistant
+    val prompt = care.lastFailedChatPrompt ?: return
+    if (care.isChatStreaming) return
+    val lastMsg = care.chatMessages.lastOrNull()
+    if (lastMsg != null && lastMsg.role == ChatRole.USER && lastMsg.text == prompt) {
+      _uiState.update { state ->
+        state.copy(
+          careAssistant =
+            state.careAssistant.copy(
+              chatMessages = state.careAssistant.chatMessages.dropLast(1),
+              chatError = null,
+              lastFailedChatPrompt = null,
+            ),
+        )
+      }
+    }
+    sendCareChatMessage(prompt)
+  }
+
+  fun dismissCareChatError() {
+    _uiState.update { state ->
+      state.copy(
+        careAssistant = state.careAssistant.copy(chatError = null, lastFailedChatPrompt = null),
+      )
+    }
+  }
+
+  fun resetCareChat() {
+    careChatJob?.cancel()
+    careChatDraftFlow.value = ""
+    lastChatSubmitAtMs = 0L
+    _uiState.update { state ->
+      state.copy(
+        careAssistant =
+          state.careAssistant.copy(
+            chatMessages = emptyList(),
+            isChatStreaming = false,
+            chatError = null,
+            lastFailedChatPrompt = null,
+            showEmergencyShortcutBanner = false,
+          ),
+        toastMessage = "Started a fresh Care AI chat.",
+      )
+    }
   }
 }
